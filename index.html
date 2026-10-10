@@ -53,7 +53,7 @@
       <div class="flex justify-center mt-3">
         <div id="sync-badge" class="bg-[#033629] text-emerald-200 text-xs px-3 py-1 rounded-full flex items-center gap-2 border border-emerald-800/50">
           <i class="fa-solid fa-bolt text-yellow-400 text-xs animate-pulse"></i>
-          <span>تزامن حي مباشر</span>
+          <span>تزامن حي مباشر الفوري</span>
         </div>
       </div>
     </div>
@@ -91,12 +91,14 @@
       </div>
     </div>
 
-    <!-- Search & Filters Container -->
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-      <!-- Search Input -->
+    <!-- Search & Suggestions Container -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3 relative">
       <div class="relative">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-sm"></i>
-        <input type="text" id="search-input" placeholder="ابحث باسم الدواء بالفرنسية أو مكان التواجد" class="w-full pr-4 pl-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition">
+        <input type="text" id="search-input" placeholder="ابحث باسم الدواء بالفرنسية (الأحرف الأولى)..." class="w-full pr-4 pl-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition" autocomplete="off">
+        
+        <!-- Live Suggestions Dropdown -->
+        <div id="suggestions-box" class="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-30 hidden max-h-48 overflow-y-auto"></div>
       </div>
 
       <!-- Filter Buttons -->
@@ -165,17 +167,18 @@
     </button>
   </div>
 
-  <!-- Add Medicine Modal -->
+  <!-- Add / Edit Medicine Modal -->
   <div id="add-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 transform transition-all">
       <div class="flex justify-between items-center border-b pb-3">
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
-        <h3 class="text-base font-extrabold text-slate-800">إضافة دواء جديد</h3>
+        <h3 id="modal-title" class="text-base font-extrabold text-slate-800">إضافة دواء جديد</h3>
       </div>
 
       <form id="add-form" class="space-y-3">
+        <input type="hidden" id="med-id">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">اسم الدواء (بالفرنسية)</label>
           <input type="text" id="name" required placeholder="مثال: Doliprane 1000mg" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
@@ -202,7 +205,7 @@
           <input type="text" id="notes" placeholder="مثال: بعد الأكل" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
         </div>
 
-        <button type="submit" class="w-full bg-[#054d3b] hover:bg-[#07634d] text-white font-bold py-3 rounded-xl text-xs transition mt-2 flex justify-center items-center gap-2">
+        <button type="submit" id="save-btn-text" class="w-full bg-[#054d3b] hover:bg-[#07634d] text-white font-bold py-3 rounded-xl text-xs transition mt-2 flex justify-center items-center gap-2">
           <i class="fa-solid fa-cloud-arrow-up"></i> حفظ وتزامن مع العائلة
         </button>
       </form>
@@ -289,7 +292,7 @@
       renderMeds();
     }
 
-    // Render Medicines
+    // Render Medicines List
     function renderMeds() {
       const container = document.getElementById('meds-list-container');
       const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
@@ -299,8 +302,7 @@
       const nextMonthStr = nextMonth.toISOString().split('T')[0];
 
       let filtered = allMeds.filter(m => {
-        // Starts with search rule (الأحرف الأولى حصراً)
-        const nameMatches = !searchTerm || m.name.toLowerCase().startsWith(searchTerm) || (m.loc && m.loc.toLowerCase().startsWith(searchTerm));
+        const nameMatches = !searchTerm || m.name.toLowerCase().startsWith(searchTerm);
         if (!nameMatches) return false;
 
         if (currentFilter === 'valid') return m.exp >= today;
@@ -328,35 +330,117 @@
               </p>
               ${m.notes ? `<p class="text-emerald-700 text-[10px] mt-0.5">ملاحظة: ${escapeHtml(m.notes)}</p>` : ''}
             </div>
-            <button onclick="deleteMed('${m.id}')" class="text-slate-400 hover:text-rose-600 p-2 transition">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
+            <div class="flex items-center gap-1">
+              <button onclick="editMed('${m.id}')" class="text-slate-400 hover:text-indigo-600 p-2 transition" title="تعديل">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button onclick="deleteMed('${m.id}')" class="text-slate-400 hover:text-rose-600 p-2 transition" title="حذف">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
           </div>
         `;
       }).join('');
     }
 
-    // Modal Control
-    function openModal() { document.getElementById('add-modal').classList.remove('hidden'); }
-    function closeModal() { document.getElementById('add-modal').classList.add('hidden'); }
+    // Live Suggestions Engine
+    const searchInput = document.getElementById('search-input');
+    const suggestionsBox = document.getElementById('suggestions-box');
 
-    // Add Form Submit
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.trim().toLowerCase();
+      renderMeds();
+
+      if (!term) {
+        suggestionsBox.classList.add('hidden');
+        suggestionsBox.innerHTML = '';
+        return;
+      }
+
+      const matches = allMeds.filter(m => m.name.toLowerCase().startsWith(term));
+
+      if (matches.length === 0) {
+        suggestionsBox.classList.add('hidden');
+        suggestionsBox.innerHTML = '';
+        return;
+      }
+
+      suggestionsBox.innerHTML = matches.map(m => `
+        <div onclick="selectSuggestion('${escapeHtml(m.name)}')" class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 border-b border-slate-100 last:border-none flex justify-between items-center">
+          <span class="font-bold">${escapeHtml(m.name)}</span>
+          <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">الكمية: ${m.quantity}</span>
+        </div>
+      `).join('');
+      
+      suggestionsBox.classList.remove('hidden');
+    });
+
+    function selectSuggestion(name) {
+      searchInput.value = name;
+      suggestionsBox.classList.add('hidden');
+      renderMeds();
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+        suggestionsBox.classList.add('hidden');
+      }
+    });
+
+    // Modal Control (Add & Edit)
+    function openModal() {
+      document.getElementById('med-id').value = '';
+      document.getElementById('add-form').reset();
+      document.getElementById('qty').value = 1;
+      document.getElementById('modal-title').innerText = 'إضافة دواء جديد';
+      document.getElementById('add-modal').classList.remove('hidden');
+    }
+
+    function editMed(id) {
+      const med = allMeds.find(m => m.id === id);
+      if (!med) return;
+
+      document.getElementById('med-id').value = med.id;
+      document.getElementById('name').value = med.name || '';
+      document.getElementById('qty').value = med.quantity || 1;
+      document.getElementById('exp').value = med.exp || '';
+      document.getElementById('loc').value = med.loc || '';
+      document.getElementById('notes').value = med.notes || '';
+      
+      document.getElementById('modal-title').innerText = 'تعديل بيانات الدواء';
+      document.getElementById('add-modal').classList.remove('hidden');
+    }
+
+    function closeModal() { 
+      document.getElementById('add-modal').classList.add('hidden'); 
+    }
+
+    // Add or Update Form Submit
     document.getElementById('add-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const id = document.getElementById('med-id').value;
+      
+      const medData = {
+        name: document.getElementById('name').value.trim(),
+        quantity: parseInt(document.getElementById('qty').value) || 1,
+        exp: document.getElementById('exp').value,
+        loc: document.getElementById('loc').value.trim(),
+        notes: document.getElementById('notes').value.trim(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
       try {
-        await db.collection('family_medicines').add({
-          name: document.getElementById('name').value.trim(),
-          quantity: parseInt(document.getElementById('qty').value) || 1,
-          exp: document.getElementById('exp').value,
-          loc: document.getElementById('loc').value.trim(),
-          notes: document.getElementById('notes').value.trim(),
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        if (id) {
+          // Update existing
+          await db.collection('family_medicines').doc(id).update(medData);
+        } else {
+          // Add new
+          await db.collection('family_medicines').add(medData);
+        }
         document.getElementById('add-form').reset();
-        document.getElementById('qty').value = 1;
         closeModal();
       } catch (err) {
-        alert("حدث خطأ أثناء الإضافة.");
+        alert("حدث خطأ أثناء الحفظ.");
       }
     });
 
@@ -366,9 +450,6 @@
         await db.collection('family_medicines').doc(id).delete();
       }
     }
-
-    // Search event
-    document.getElementById('search-input').addEventListener('input', renderMeds);
 
     // Share Functions
     function shareApp() {
