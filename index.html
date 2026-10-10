@@ -24,14 +24,9 @@
   <header class="bg-[#054d3b] text-white pt-5 pb-6 px-4 shadow-lg rounded-b-3xl">
     <div class="max-w-md mx-auto">
       <div class="flex justify-between items-center mb-3">
-        <!-- Icons Left -->
-        <div class="flex items-center gap-2">
-          <button onclick="shareApp()" class="w-9 h-9 rounded-xl bg-[#09634e] flex items-center gap-1 justify-center text-emerald-300 text-sm hover:bg-[#0c785f] transition">
-            <i class="fa-solid fa-mobile-screen"></i>
-          </button>
-          <button onclick="shareApp()" class="w-9 h-9 rounded-xl bg-[#09634e] flex justify-center items-center text-emerald-300 text-sm hover:bg-[#0c785f] transition">
-            <i class="fa-brands fa-whatsapp"></i>
-          </button>
+        <!-- App Icon -->
+        <div class="w-10 h-10 rounded-2xl bg-[#09634e] flex justify-center items-center text-emerald-300 text-xl shadow-inner">
+          <i class="fa-solid fa-pills"></i>
         </div>
 
         <!-- Badges & Title Center/Right -->
@@ -42,18 +37,13 @@
           </div>
           <p class="text-emerald-100 text-xs">دليل وتتبع الأدوية المنزلية</p>
         </div>
-
-        <!-- App Icon -->
-        <div class="w-10 h-10 rounded-2xl bg-[#09634e] flex justify-center items-center text-emerald-300 text-xl shadow-inner">
-          <i class="fa-solid fa-pills"></i>
-        </div>
       </div>
 
       <!-- Live Sync Badge -->
       <div class="flex justify-center mt-3">
         <div id="sync-badge" class="bg-[#033629] text-emerald-200 text-xs px-3 py-1 rounded-full flex items-center gap-2 border border-emerald-800/50">
           <i class="fa-solid fa-bolt text-yellow-400 text-xs animate-pulse"></i>
-          <span>تزامن حي مباشر الفوري</span>
+          <span>تزامن حي مباشر فوري</span>
         </div>
       </div>
     </div>
@@ -100,61 +90,13 @@
         <!-- Live Suggestions Dropdown -->
         <div id="suggestions-box" class="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-30 hidden max-h-48 overflow-y-auto"></div>
       </div>
-
-      <!-- Filter Buttons -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-        <button onclick="setFilter('all')" id="btn-filter-all" class="bg-[#054d3b] text-white px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 whitespace-nowrap">
-          الكل
-        </button>
-        <button onclick="setFilter('valid')" id="btn-filter-valid" class="bg-slate-100 text-slate-600 hover:bg-slate-200 px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <i class="fa-solid fa-circle-check text-emerald-500"></i> أدوية صالحة
-        </button>
-        <button onclick="setFilter('expiring')" id="btn-filter-expiring" class="bg-slate-100 text-slate-600 hover:bg-slate-200 px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <i class="fa-solid fa-clock text-amber-500"></i> تنتهي قريباً
-        </button>
-      </div>
     </div>
 
-    <!-- Medicines List Section -->
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-      <div class="flex justify-between items-center">
-        <button onclick="toggleList()" class="bg-emerald-50 hover:bg-emerald-100 text-[#054d3b] px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200">
-          <i class="fa-solid fa-eye text-emerald-600"></i>
-          <span id="toggle-btn-text">إظهار الأدوية</span>
-        </button>
-        
-        <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-          قائمة الأدوية المتاحة
-          <i class="fa-solid fa-layer-group text-emerald-600"></i>
-        </h2>
-      </div>
-
-      <div id="meds-list-container" class="hidden space-y-2 pt-2 max-h-80 overflow-y-auto">
-        <p class="text-center text-slate-400 py-6 text-xs">جاري تحميل البيانات...</p>
-      </div>
-    </div>
-
-    <!-- Share Card -->
-    <div class="bg-[#02281e] text-white p-5 rounded-3xl shadow-lg relative overflow-hidden">
-      <div class="flex justify-between items-start mb-3">
-        <div class="w-12 h-12 rounded-2xl bg-[#074737] flex justify-center items-center text-emerald-400 text-xl border border-emerald-700/50">
-          <i class="fa-brands fa-whatsapp"></i>
-        </div>
-        <div class="text-right">
-          <h3 class="text-sm font-extrabold text-white">شارك دليل الأدوية مع عائلتك</h3>
-          <p class="text-[11px] text-emerald-200/80 mt-1 leading-relaxed">
-            أرسل التطبيق لأفراد العائلة ليتعرف الجميع على الأدوية المتوفرة ومكان وجودها بسرعة.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 mt-4">
-        <button onclick="shareApp()" class="bg-[#10b981] hover:bg-emerald-500 text-emerald-950 font-bold py-2.5 px-3 rounded-xl text-xs transition flex justify-center items-center gap-1.5 shadow-md">
-          <i class="fa-brands fa-whatsapp"></i> مشاركة عبر الواتساب
-        </button>
-        <button onclick="copyAppLink()" class="bg-[#0b4234] hover:bg-[#0e5241] text-emerald-100 font-bold py-2.5 px-3 rounded-xl text-xs transition flex justify-center items-center gap-1.5 border border-emerald-800">
-          <i class="fa-regular fa-copy"></i> نسخ النص
-        </button>
+    <!-- Searched Medicine Result View -->
+    <div id="search-result-container" class="space-y-3">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
+        <i class="fa-solid fa-capsules text-3xl text-emerald-600/30 mb-2 block"></i>
+        ادخل الحروف الأولى لاسم الدواء في مربع البحث أعلاه لعرض التفاصيل المكانية والصلاحية.
       </div>
     </div>
 
@@ -229,8 +171,6 @@
     const db = firebase.firestore();
 
     let allMeds = [];
-    let currentFilter = 'all';
-    let isListVisible = false;
 
     // Real-time Cloud Sync
     db.collection('family_medicines').orderBy('createdAt', 'desc')
@@ -240,7 +180,7 @@
           allMeds.push({ id: doc.id, ...doc.data() });
         });
         updateStats();
-        renderMeds();
+        renderSearchResult();
       });
 
     // Stats Calculation
@@ -263,30 +203,184 @@
       document.getElementById('stat-expired').innerText = expiredCount;
     }
 
-    // Explicitly show list when searching
-    function showList() {
-      isListVisible = true;
-      document.getElementById('meds-list-container').classList.remove('hidden');
-      document.getElementById('toggle-btn-text').innerText = 'إخفاء الأدوية';
+    // Render Search Result Cards (Displays only searched medicine)
+    function renderSearchResult() {
+      const container = document.getElementById('search-result-container');
+      const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!searchTerm) {
+        container.innerHTML = `
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
+            <i class="fa-solid fa-capsules text-3xl text-emerald-600/30 mb-2 block"></i>
+            ادخل الحروف الأولى لاسم الدواء في مربع البحث أعلاه لعرض التفاصيل المكانية والصلاحية.
+          </div>`;
+        return;
+      }
+
+      // Starts-with rule
+      let matches = allMeds.filter(m => m.name.toLowerCase().startsWith(searchTerm));
+
+      if (matches.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
+            <i class="fa-solid fa-circle-exclamation text-2xl text-amber-500 mb-2 block"></i>
+            لم يتم العثور على دواء يبدأ بـ "${escapeHtml(searchTerm)}".
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = matches.map(m => {
+        const isExpired = m.exp < today;
+        return `
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+            <div class="flex justify-between items-start border-b pb-3">
+              <div class="flex items-center gap-1 text-slate-400">
+                <button onclick="editMed('${m.id}')" class="hover:text-indigo-600 p-1.5 transition" title="تعديل">
+                  <i class="fa-solid fa-pen-to-square text-sm"></i>
+                </button>
+                <button onclick="deleteMed('${m.id}')" class="hover:text-rose-600 p-1.5 transition" title="حذف">
+                  <i class="fa-solid fa-trash-can text-sm"></i>
+                </button>
+              </div>
+              <div class="text-right">
+                <span class="bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-md text-xs inline-block mb-1">الكمية: x${m.quantity}</span>
+                <h3 class="text-base font-extrabold text-slate-800">${escapeHtml(m.name)}</h3>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-right">
+                <span class="text-slate-400 block text-[10px] mb-0.5">تاريخ الصلاحية</span>
+                <span class="font-bold ${isExpired ? 'text-rose-600' : 'text-slate-700'}">${m.exp || '-'} ${isExpired ? '(منتهي)' : ''}</span>
+              </div>
+              <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-right">
+                <span class="text-slate-400 block text-[10px] mb-0.5">مكان الحفظ</span>
+                <span class="font-bold text-slate-700">${escapeHtml(m.loc || 'غير محدد')}</span>
+              </div>
+            </div>
+
+            ${m.notes ? `
+            <div class="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100 text-right text-xs">
+              <span class="text-emerald-800 font-bold block text-[10px] mb-0.5">ملاحظات الاستعمال</span>
+              <span class="text-slate-600">${escapeHtml(m.notes)}</span>
+            </div>` : ''}
+          </div>
+        `;
+      }).join('');
     }
 
-    // Toggle List
-    function toggleList() {
-      isListVisible = !isListVisible;
-      const container = document.getElementById('meds-list-container');
-      const btnText = document.getElementById('toggle-btn-text');
+    // Live Suggestions Engine
+    const searchInput = document.getElementById('search-input');
+    const suggestionsBox = document.getElementById('suggestions-box');
 
-      if (isListVisible) {
-        container.classList.remove('hidden');
-        btnText.innerText = 'إخفاء الأدوية';
-      } else {
-        container.classList.add('hidden');
-        btnText.innerText = 'إظهار الأدوية';
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.trim().toLowerCase();
+      renderSearchResult();
+
+      if (!term) {
+        suggestionsBox.classList.add('hidden');
+        suggestionsBox.innerHTML = '';
+        return;
+      }
+
+      const matches = allMeds.filter(m => m.name.toLowerCase().startsWith(term));
+
+      if (matches.length === 0) {
+        suggestionsBox.classList.add('hidden');
+        suggestionsBox.innerHTML = '';
+        return;
+      }
+
+      suggestionsBox.innerHTML = matches.map(m => `
+        <div onclick="selectSuggestion('${escapeHtml(m.name)}')" class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 border-b border-slate-100 last:border-none flex justify-between items-center">
+          <span class="font-bold">${escapeHtml(m.name)}</span>
+          <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">x${m.quantity}</span>
+        </div>
+      `).join('');
+      
+      suggestionsBox.classList.remove('hidden');
+    });
+
+    function selectSuggestion(name) {
+      searchInput.value = name;
+      suggestionsBox.classList.add('hidden');
+      renderSearchResult();
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+        suggestionsBox.classList.add('hidden');
+      }
+    });
+
+    // Modal Control (Add & Edit)
+    function openModal() {
+      document.getElementById('med-id').value = '';
+      document.getElementById('add-form').reset();
+      document.getElementById('qty').value = 1;
+      document.getElementById('modal-title').innerText = 'إضافة دواء جديد';
+      document.getElementById('add-modal').classList.remove('hidden');
+    }
+
+    function editMed(id) {
+      const med = allMeds.find(m => m.id === id);
+      if (!med) return;
+
+      document.getElementById('med-id').value = med.id;
+      document.getElementById('name').value = med.name || '';
+      document.getElementById('qty').value = med.quantity || 1;
+      document.getElementById('exp').value = med.exp || '';
+      document.getElementById('loc').value = med.loc || '';
+      document.getElementById('notes').value = med.notes || '';
+      
+      document.getElementById('modal-title').innerText = 'تعديل بيانات الدواء';
+      document.getElementById('add-modal').classList.remove('hidden');
+    }
+
+    function closeModal() { 
+      document.getElementById('add-modal').classList.add('hidden'); 
+    }
+
+    // Add or Update Form Submit
+    document.getElementById('add-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('med-id').value;
+      
+      const medData = {
+        name: document.getElementById('name').value.trim(),
+        quantity: parseInt(document.getElementById('qty').value) || 1,
+        exp: document.getElementById('exp').value,
+        loc: document.getElementById('loc').value.trim(),
+        notes: document.getElementById('notes').value.trim(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        if (id) {
+          await db.collection('family_medicines').doc(id).update(medData);
+        } else {
+          await db.collection('family_medicines').add(medData);
+        }
+        document.getElementById('add-form').reset();
+        closeModal();
+      } catch (err) {
+        alert("حدث خطأ أثناء الحفظ.");
+      }
+    });
+
+    // Delete
+    async function deleteMed(id) {
+      if (confirm("هل تريد حذف هذا الدواء؟")) {
+        await db.collection('family_medicines').doc(id).delete();
       }
     }
 
-    // Filter Switcher
-    function setFilter(filter) {
-      currentFilter = filter;
-      ['all', 'valid', 'expiring'].forEach(f => {
-        const btn = document.getElementById(`btn-
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+  </script>
+</body>
+</html>
