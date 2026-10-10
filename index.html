@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>صيدلية العائلة - Pharmacie Familiale</title>
-  
-  <!-- Tailwind CSS -->
+  <title>صيدلية العائلة</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Firebase Scripts -->
@@ -19,108 +16,55 @@
     body { font-family: 'Cairo', sans-serif; }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
+<body class="bg-gray-50 min-h-screen p-4">
 
-  <!-- Header -->
-  <header class="bg-indigo-600 text-white shadow-md">
-    <div class="max-w-4xl mx-auto px-4 py-6 flex justify-between items-center">
+  <div class="max-w-xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+    <h1 class="text-2xl font-bold text-center text-indigo-600 mb-6">
+      <i class="fa-solid fa-capsules ml-2"></i> صيدلية العائلة
+    </h1>
+
+    <!-- Form -->
+    <form id="med-form" class="space-y-4 mb-8">
       <div>
-        <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-3">
-          <i class="fa-solid font-bold fa-capsules text-yellow-300"></i>
-          صيدلية العائلة
-        </h1>
-        <p class="text-indigo-200 text-sm mt-1">Pharmacie Familiale - Mosaïque & Maintien</p>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">اسم الدواء</label>
+        <input type="text" id="name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
       </div>
-      <div id="status-badge" class="bg-indigo-700 text-xs text-indigo-200 px-3 py-1 rounded-full flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> جاري الاتصال...
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">الكمية</label>
+          <input type="number" id="qty" min="1" value="1" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">تاريخ الصلاحية</label>
+          <input type="date" id="exp" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
       </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">المكان</label>
+        <input type="text" id="loc" placeholder="مثال: الخزانة الرئيسية" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">ملاحظات</label>
+        <input type="text" id="notes" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+        إضافة الدواء
+      </button>
+    </form>
+
+    <!-- List -->
+    <h2 class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">الأدوية المسجلة</h2>
+    <div id="med-list" class="space-y-3">
+      <p class="text-center text-gray-400 py-4">جاري تحميل الأدوية...</p>
     </div>
-  </header>
-
-  <main class="max-w-4xl mx-auto px-4 mt-6">
-    
-    <!-- Add Medicine Form -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
-      <h2 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
-        <i class="fa-solid fa-plus-circle text-indigo-600"></i> إضافة دواء جديد / Ajouter un médicament
-      </h2>
-      
-      <form id="add-med-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">اسم الدواء (Nom du médicament)</label>
-          <input type="text" id="med-name" required placeholder="مثال: Paracétamol 500mg" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">تاريخ الانتهاء (Date d'expiration)</label>
-          <input type="date" id="med-exp" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">الكمية (Quantité)</label>
-          <input type="number" id="med-qty" min="1" value="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">مكان الحفظ (Emplacement)</label>
-          <input type="text" id="med-loc" placeholder="مثال: خزانة المطبخ / Drawer 1" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-
-        <div class="md:col-span-2 lg:col-span-2">
-          <label class="block text-xs font-semibold text-slate-600 mb-1">ملاحظات (Remarques)</label>
-          <input type="text" id="med-notes" placeholder="مثال: بعد الأكل / Pour adulte" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-
-        <div class="md:col-span-2 lg:col-span-3">
-          <button type="submit" id="btn-submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex justify-center items-center gap-2">
-            <i class="fa-solid fa-cloud-arrow-up"></i> إضافة وتزامن مباشر
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- Search and Medicine List -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-        <h2 class="text-lg font-bold text-slate-700 flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-indigo-600"></i> قائمة الأدوية المتوفرة
-        </h2>
-        
-        <!-- Search bar -->
-        <div class="relative w-full md:w-64">
-          <i class="fa-solid fa-search absolute right-3 top-3 text-slate-400 text-sm"></i>
-          <input type="text" id="search-input" placeholder="بحث عن دواء..." class="w-full pr-9 pl-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-        </div>
-      </div>
-
-      <!-- Medicine Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-right text-sm text-slate-600">
-          <thead class="bg-slate-50 text-slate-700 font-semibold border-b border-slate-200">
-            <tr>
-              <th class="p-3">اسم الدواء</th>
-              <th class="p-3">الكمية</th>
-              <th class="p-3">تاريخ الصلاحية</th>
-              <th class="p-3">المكان</th>
-              <th class="p-3">ملاحظات</th>
-              <th class="p-3 text-center">إجراء</th>
-            </tr>
-          </thead>
-          <tbody id="meds-table-body" class="divide-y divide-slate-100">
-            <tr>
-              <td colspan="6" class="text-center py-8 text-slate-400">
-                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-indigo-500 block mb-2"></i>
-                جاري تحميل الأدوية المتزامنة...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
+  </div>
 
   <script>
-    // Firebase Public Shared Database Configuration
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyD-family-pharmacy-app-key-01",
       authDomain: "family-pharmacy-app.firebaseapp.com",
@@ -130,97 +74,63 @@
       appId: "1:1098234821:web:08234a87c2b"
     };
 
-    // Initialize Firebase
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.firestore();
 
-    // Elements
-    const form = document.getElementById('add-med-form');
-    const medsTableBody = document.getElementById('meds-table-body');
-    const statusBadge = document.getElementById('status-badge');
-    const searchInput = document.getElementById('search-input');
+    const form = document.getElementById('med-form');
+    const medList = document.getElementById('med-list');
 
-    let allMeds = [];
-
-    // Real-time Cloud Sync Listener
+    // Real-time Sync
     db.collection('family_medicines').orderBy('createdAt', 'desc')
       .onSnapshot((snapshot) => {
-        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> متصل بالسحابة (متزامن)`;
-        statusBadge.className = "bg-emerald-900/50 text-xs text-emerald-200 px-3 py-1 rounded-full flex items-center gap-2";
-        
-        allMeds = [];
+        if (snapshot.empty) {
+          medList.innerHTML = '<p class="text-center text-gray-400 py-4">لا توجد أدوية مضافة حالياً.</p>';
+          return;
+        }
+
+        let html = '';
         snapshot.forEach((doc) => {
-          allMeds.push({ id: doc.id, ...doc.data() });
-        });
-        renderMeds(allMeds);
-      }, (error) => {
-        console.error("Firestore sync error:", error);
-        statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span> خطأ في المزامنة`;
-        statusBadge.className = "bg-rose-900/50 text-xs text-rose-200 px-3 py-1 rounded-full flex items-center gap-2";
-      });
-
-    // Render medicines list
-    function renderMeds(medsList) {
-      if (medsList.length === 0) {
-        medsTableBody.innerHTML = `
-          <tr>
-            <td colspan="6" class="text-center py-8 text-slate-400">
-              لا توجد أدوية مسجلة حتى الآن. اضف أول دواء للعائلة من النموذج أعلاه!
-            </td>
-          </tr>`;
-        return;
-      }
-
-      const today = new Date().toISOString().split('T')[0];
-
-      medsTableBody.innerHTML = medsList.map((med) => {
-        const isExpired = med.expiration && med.expiration < today;
-        const expClass = isExpired ? 'bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded text-xs' : '';
-
-        return `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="p-3 font-semibold text-slate-800">${escapeHtml(med.name)}</td>
-            <td class="p-3"><span class="bg-indigo-50 text-indigo-700 font-bold px-2 py-1 rounded-md text-xs">${med.quantity}</span></td>
-            <td class="p-3"><span class="${expClass}">${med.expiration || '-'} ${isExpired ? '(منتهي)' : ''}</span></td>
-            <td class="p-3">${escapeHtml(med.location || '-')}</td>
-            <td class="p-3 text-slate-500">${escapeHtml(med.notes || '-')}</td>
-            <td class="p-3 text-center">
-              <button onclick="deleteMed('${med.id}')" class="text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 rounded-lg transition" title="حذف">
+          const m = doc.data();
+          html += `
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 flex justify-between items-center">
+              <div>
+                <h3 class="font-bold text-gray-800">${escapeHtml(m.name)}</h3>
+                <p class="text-xs text-gray-500">الكمية: ${m.quantity} | الصلاحية: ${m.exp || '-'}</p>
+                <p class="text-xs text-indigo-600 mt-0.5">المكان: ${escapeHtml(m.loc || 'غير محدد')} ${m.notes ? '| ' + escapeHtml(m.notes) : ''}</p>
+              </div>
+              <button onclick="deleteMed('${doc.id}')" class="text-red-500 hover:text-red-700 p-2">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
+            </div>
+          `;
+        });
+        medList.innerHTML = html;
+      });
 
-    // Add Medicine to Cloud
+    // Add
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-      const newMed = {
-        name: document.getElementById('med-name').value.trim(),
-        expiration: document.getElementById('med-exp').value,
-        quantity: parseInt(document.getElementById('med-qty').value) || 1,
-        location: document.getElementById('med-loc').value.trim(),
-        notes: document.getElementById('med-notes').value.trim(),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
       try {
-        await db.collection('family_medicines').add(newMed);
+        await db.collection('family_medicines').add({
+          name: document.getElementById('name').value.trim(),
+          quantity: parseInt(document.getElementById('qty').value) || 1,
+          exp: document.getElementById('exp').value,
+          loc: document.getElementById('loc').value.trim(),
+          notes: document.getElementById('notes').value.trim(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
         form.reset();
-        document.getElementById('med-qty').value = 1;
+        document.getElementById('qty').value = 1;
       } catch (err) {
-        alert("حدث خطأ أثناء حفظ الدواء، يرجى المحاولة مرة أخرى.");
+        alert("حدث خطأ أثناء الإضافة.");
       }
     });
 
-    // Delete Medicine from Cloud
+    // Delete
     async function deleteMed(id) {
-      if (confirm("هل أنت تأكد من رغبتك في حذف هذا الدواء؟")) {
+      if (confirm("هل تريد حذف هذا الدواء؟")) {
         try {
           await db.collection('family_medicines').doc(id).delete();
         } catch (err) {
@@ -229,18 +139,6 @@
       }
     }
 
-    // Search filter
-    searchInput.addEventListener('input', (e) => {
-      const term = e.target.value.toLowerCase();
-      const filtered = allMeds.filter(m => 
-        m.name.toLowerCase().includes(term) || 
-        (m.location && m.location.toLowerCase().includes(term)) ||
-        (m.notes && m.notes.toLowerCase().includes(term))
-      );
-      renderMeds(filtered);
-    });
-
-    // Helper for security
     function escapeHtml(str) {
       return (str || '').replace(/[&<>"']/g, function(m) {
         return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
