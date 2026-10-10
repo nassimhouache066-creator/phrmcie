@@ -115,7 +115,7 @@
       </div>
     </div>
 
-    <!-- Medicines List Section (Hidden By Default) -->
+    <!-- Medicines List Section -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
       <div class="flex justify-between items-center">
         <button onclick="toggleList()" class="bg-emerald-50 hover:bg-emerald-100 text-[#054d3b] px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200">
@@ -263,6 +263,13 @@
       document.getElementById('stat-expired').innerText = expiredCount;
     }
 
+    // Explicitly show list when searching
+    function showList() {
+      isListVisible = true;
+      document.getElementById('meds-list-container').classList.remove('hidden');
+      document.getElementById('toggle-btn-text').innerText = 'إخفاء الأدوية';
+    }
+
     // Toggle List
     function toggleList() {
       isListVisible = !isListVisible;
@@ -282,192 +289,4 @@
     function setFilter(filter) {
       currentFilter = filter;
       ['all', 'valid', 'expiring'].forEach(f => {
-        const btn = document.getElementById(`btn-filter-${f}`);
-        if (f === filter) {
-          btn.className = "bg-[#054d3b] text-white px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 whitespace-nowrap";
-        } else {
-          btn.className = "bg-slate-100 text-slate-600 hover:bg-slate-200 px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 whitespace-nowrap";
-        }
-      });
-      renderMeds();
-    }
-
-    // Render Medicines List
-    function renderMeds() {
-      const container = document.getElementById('meds-list-container');
-      const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
-      const today = new Date().toISOString().split('T')[0];
-      const nextMonth = new Date();
-      nextMonth.setDate(nextMonth.getDate() + 30);
-      const nextMonthStr = nextMonth.toISOString().split('T')[0];
-
-      let filtered = allMeds.filter(m => {
-        const nameMatches = !searchTerm || m.name.toLowerCase().startsWith(searchTerm);
-        if (!nameMatches) return false;
-
-        if (currentFilter === 'valid') return m.exp >= today;
-        if (currentFilter === 'expiring') return m.exp >= today && m.exp <= nextMonthStr;
-        return true;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<p class="text-center text-slate-400 py-6 text-xs">لا توجد أدوية مطابقة حالياً.</p>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(m => {
-        const isExpired = m.exp < today;
-        return `
-          <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex justify-between items-center text-xs hover:border-emerald-300 transition">
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 class="font-extrabold text-slate-800 text-sm">${escapeHtml(m.name)}</h4>
-                <span class="bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-md text-[10px]">x${m.quantity}</span>
-              </div>
-              <p class="text-slate-500 text-[11px] mt-1">
-                الصلاحية: <span class="${isExpired ? 'text-rose-600 font-bold' : ''}">${m.exp || '-'}</span> 
-                ${m.loc ? `| المكان: <span class="text-slate-700">${escapeHtml(m.loc)}</span>` : ''}
-              </p>
-              ${m.notes ? `<p class="text-emerald-700 text-[10px] mt-0.5">ملاحظة: ${escapeHtml(m.notes)}</p>` : ''}
-            </div>
-            <div class="flex items-center gap-1">
-              <button onclick="editMed('${m.id}')" class="text-slate-400 hover:text-indigo-600 p-2 transition" title="تعديل">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-              <button onclick="deleteMed('${m.id}')" class="text-slate-400 hover:text-rose-600 p-2 transition" title="حذف">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Live Suggestions Engine
-    const searchInput = document.getElementById('search-input');
-    const suggestionsBox = document.getElementById('suggestions-box');
-
-    searchInput.addEventListener('input', (e) => {
-      const term = e.target.value.trim().toLowerCase();
-      renderMeds();
-
-      if (!term) {
-        suggestionsBox.classList.add('hidden');
-        suggestionsBox.innerHTML = '';
-        return;
-      }
-
-      const matches = allMeds.filter(m => m.name.toLowerCase().startsWith(term));
-
-      if (matches.length === 0) {
-        suggestionsBox.classList.add('hidden');
-        suggestionsBox.innerHTML = '';
-        return;
-      }
-
-      suggestionsBox.innerHTML = matches.map(m => `
-        <div onclick="selectSuggestion('${escapeHtml(m.name)}')" class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 border-b border-slate-100 last:border-none flex justify-between items-center">
-          <span class="font-bold">${escapeHtml(m.name)}</span>
-          <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">الكمية: ${m.quantity}</span>
-        </div>
-      `).join('');
-      
-      suggestionsBox.classList.remove('hidden');
-    });
-
-    function selectSuggestion(name) {
-      searchInput.value = name;
-      suggestionsBox.classList.add('hidden');
-      renderMeds();
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-        suggestionsBox.classList.add('hidden');
-      }
-    });
-
-    // Modal Control (Add & Edit)
-    function openModal() {
-      document.getElementById('med-id').value = '';
-      document.getElementById('add-form').reset();
-      document.getElementById('qty').value = 1;
-      document.getElementById('modal-title').innerText = 'إضافة دواء جديد';
-      document.getElementById('add-modal').classList.remove('hidden');
-    }
-
-    function editMed(id) {
-      const med = allMeds.find(m => m.id === id);
-      if (!med) return;
-
-      document.getElementById('med-id').value = med.id;
-      document.getElementById('name').value = med.name || '';
-      document.getElementById('qty').value = med.quantity || 1;
-      document.getElementById('exp').value = med.exp || '';
-      document.getElementById('loc').value = med.loc || '';
-      document.getElementById('notes').value = med.notes || '';
-      
-      document.getElementById('modal-title').innerText = 'تعديل بيانات الدواء';
-      document.getElementById('add-modal').classList.remove('hidden');
-    }
-
-    function closeModal() { 
-      document.getElementById('add-modal').classList.add('hidden'); 
-    }
-
-    // Add or Update Form Submit
-    document.getElementById('add-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = document.getElementById('med-id').value;
-      
-      const medData = {
-        name: document.getElementById('name').value.trim(),
-        quantity: parseInt(document.getElementById('qty').value) || 1,
-        exp: document.getElementById('exp').value,
-        loc: document.getElementById('loc').value.trim(),
-        notes: document.getElementById('notes').value.trim(),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      try {
-        if (id) {
-          // Update existing
-          await db.collection('family_medicines').doc(id).update(medData);
-        } else {
-          // Add new
-          await db.collection('family_medicines').add(medData);
-        }
-        document.getElementById('add-form').reset();
-        closeModal();
-      } catch (err) {
-        alert("حدث خطأ أثناء الحفظ.");
-      }
-    });
-
-    // Delete
-    async function deleteMed(id) {
-      if (confirm("هل تريد حذف هذا الدواء؟")) {
-        await db.collection('family_medicines').doc(id).delete();
-      }
-    }
-
-    // Share Functions
-    function shareApp() {
-      const url = window.location.href;
-      const text = `صيدلية العائلة - تابع واعرف الأدوية المتوفرة في المنزل مباشرة عبر هذا الرابط:\n${url}`;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function copyAppLink() {
-      navigator.clipboard.writeText(window.location.href);
-      alert("تم نسخ رابط التطبيق بنجاح!");
-    }
-
-    function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, function(m) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-      });
-    }
-  </script>
-</body>
-</html>
+        const btn = document.getElementById(`btn-
