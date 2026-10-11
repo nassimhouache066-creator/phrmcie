@@ -24,9 +24,18 @@
   <header class="bg-[#054d3b] text-white pt-5 pb-6 px-4 shadow-lg rounded-b-3xl">
     <div class="max-w-md mx-auto">
       <div class="flex justify-between items-center mb-3">
-        <!-- App Icon -->
-        <div class="w-10 h-10 rounded-2xl bg-[#09634e] flex justify-center items-center text-emerald-300 text-xl shadow-inner">
-          <i class="fa-solid fa-pills"></i>
+        <!-- Icons Left (Manage & WhatsApp Share) -->
+        <div class="flex items-center gap-2">
+          <!-- Manage / Delete Medicines Icon -->
+          <button onclick="openManageModal()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-amber-300 text-lg shadow-inner transition relative" title="إدارة وإزالة الأدوية">
+            <i class="fa-solid fa-boxes-packing"></i>
+            <span id="manage-badge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#054d3b]">0</span>
+          </button>
+
+          <!-- Small Active WhatsApp Share Icon -->
+          <button onclick="shareApp()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-emerald-300 text-lg shadow-inner transition" title="مشاركة التطبيق عبر الواتساب">
+            <i class="fa-brands fa-whatsapp"></i>
+          </button>
         </div>
 
         <!-- Badges & Title Center/Right -->
@@ -81,7 +90,7 @@
       </div>
     </div>
 
-    <!-- Search & Suggestions Container -->
+    <!-- Search Box Container -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3 relative">
       <div class="relative">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-sm"></i>
@@ -92,11 +101,11 @@
       </div>
     </div>
 
-    <!-- Searched Medicine Result View -->
-    <div id="search-result-container" class="space-y-3">
+    <!-- Active Medicines Cards View -->
+    <div id="meds-container" class="space-y-3">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
-        <i class="fa-solid fa-capsules text-3xl text-emerald-600/30 mb-2 block"></i>
-        ادخل الحروف الأولى لاسم الدواء في مربع البحث أعلاه لعرض التفاصيل المكانية والصلاحية.
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-600 mb-2 block"></i>
+        جاري تحميل الأدوية المتزامنة...
       </div>
     </div>
 
@@ -107,6 +116,27 @@
     <button onclick="openModal()" class="w-full bg-[#0d9488] hover:bg-teal-600 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-xl transition flex justify-center items-center gap-2 text-sm border border-teal-400/30">
       <i class="fa-solid fa-plus text-lg"></i> إضافة دواء جديد
     </button>
+  </div>
+
+  <!-- Manage / Delete Medicines Modal -->
+  <div id="manage-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center border-b pb-3">
+        <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
+          إدارة وإزالة الأدوية
+          <i class="fa-solid fa-boxes-packing text-amber-500"></i>
+        </h3>
+      </div>
+
+      <p class="text-xs text-slate-500 text-right">يمكنك مراجعة جميع الأدوية المضافة وحذف أي دواء من الصيدلية العائلية.</p>
+
+      <div id="manage-list-container" class="space-y-2 overflow-y-auto flex-1 pr-1">
+        <!-- Dynamic Medicine Items -->
+      </div>
+    </div>
   </div>
 
   <!-- Add / Edit Medicine Modal -->
@@ -180,7 +210,8 @@
           allMeds.push({ id: doc.id, ...doc.data() });
         });
         updateStats();
-        renderSearchResult();
+        renderMeds();
+        renderManageList();
       });
 
     // Stats Calculation
@@ -201,25 +232,26 @@
       document.getElementById('stat-total').innerText = allMeds.length;
       document.getElementById('stat-expiring').innerText = expiringCount;
       document.getElementById('stat-expired').innerText = expiredCount;
+      document.getElementById('manage-badge').innerText = allMeds.length;
     }
 
-    // Render Search Result Cards (Displays only searched medicine)
-    function renderSearchResult() {
-      const container = document.getElementById('search-result-container');
+    // Render All / Searched Medicines Cards
+    function renderMeds() {
+      const container = document.getElementById('meds-container');
       const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
       const today = new Date().toISOString().split('T')[0];
 
-      if (!searchTerm) {
+      if (allMeds.length === 0) {
         container.innerHTML = `
           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
             <i class="fa-solid fa-capsules text-3xl text-emerald-600/30 mb-2 block"></i>
-            ادخل الحروف الأولى لاسم الدواء في مربع البحث أعلاه لعرض التفاصيل المكانية والصلاحية.
+            لا توجد أدوية مضافة حالياً. انقر على "+ إضافة دواء جديد" لإضافة أول دواء للعائلة.
           </div>`;
         return;
       }
 
-      // Starts-with rule
-      let matches = allMeds.filter(m => m.name.toLowerCase().startsWith(searchTerm));
+      // Starts-with search filter
+      let matches = allMeds.filter(m => !searchTerm || m.name.toLowerCase().startsWith(searchTerm));
 
       if (matches.length === 0) {
         container.innerHTML = `
@@ -270,13 +302,34 @@
       }).join('');
     }
 
+    // Render Manage / Delete Modal List
+    function renderManageList() {
+      const container = document.getElementById('manage-list-container');
+      if (allMeds.length === 0) {
+        container.innerHTML = '<p class="text-center text-slate-400 py-6 text-xs">لا توجد أدوية لإدارتها.</p>';
+        return;
+      }
+
+      container.innerHTML = allMeds.map(m => `
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex justify-between items-center text-xs">
+          <button onclick="deleteMed('${m.id}')" class="text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition text-xs flex items-center gap-1 font-bold">
+            <i class="fa-solid fa-trash-can"></i> إزالة
+          </button>
+          <div class="text-right">
+            <h4 class="font-extrabold text-slate-800">${escapeHtml(m.name)}</h4>
+            <span class="text-[10px] text-slate-500">الكمية: ${m.quantity} | المكان: ${escapeHtml(m.loc || 'غير محدد')}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
     // Live Suggestions Engine
     const searchInput = document.getElementById('search-input');
     const suggestionsBox = document.getElementById('suggestions-box');
 
     searchInput.addEventListener('input', (e) => {
       const term = e.target.value.trim().toLowerCase();
-      renderSearchResult();
+      renderMeds();
 
       if (!term) {
         suggestionsBox.classList.add('hidden');
@@ -305,7 +358,7 @@
     function selectSuggestion(name) {
       searchInput.value = name;
       suggestionsBox.classList.add('hidden');
-      renderSearchResult();
+      renderMeds();
     }
 
     document.addEventListener('click', (e) => {
@@ -314,13 +367,25 @@
       }
     });
 
-    // Modal Control (Add & Edit)
+    // Modals Controls
     function openModal() {
       document.getElementById('med-id').value = '';
       document.getElementById('add-form').reset();
       document.getElementById('qty').value = 1;
       document.getElementById('modal-title').innerText = 'إضافة دواء جديد';
       document.getElementById('add-modal').classList.remove('hidden');
+    }
+
+    function closeModal() { 
+      document.getElementById('add-modal').classList.add('hidden'); 
+    }
+
+    function openManageModal() {
+      document.getElementById('manage-modal').classList.remove('hidden');
+    }
+
+    function closeManageModal() {
+      document.getElementById('manage-modal').classList.add('hidden');
     }
 
     function editMed(id) {
@@ -336,10 +401,6 @@
       
       document.getElementById('modal-title').innerText = 'تعديل بيانات الدواء';
       document.getElementById('add-modal').classList.remove('hidden');
-    }
-
-    function closeModal() { 
-      document.getElementById('add-modal').classList.add('hidden'); 
     }
 
     // Add or Update Form Submit
@@ -369,11 +430,18 @@
       }
     });
 
-    // Delete
+    // Delete Medicine
     async function deleteMed(id) {
-      if (confirm("هل تريد حذف هذا الدواء؟")) {
+      if (confirm("هل تريد إزالة هذا الدواء من صيدلية العائلة؟")) {
         await db.collection('family_medicines').doc(id).delete();
       }
+    }
+
+    // WhatsApp Share Function
+    function shareApp() {
+      const url = window.location.href;
+      const text = `صيدلية العائلة - تابع واعرف الأدوية المتوفرة في المنزل مباشرة عبر هذا الرابط:\n${url}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
     function escapeHtml(str) {
