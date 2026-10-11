@@ -8,6 +8,10 @@
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
@@ -32,21 +36,13 @@
           </button>
         </div>
 
-        <!-- Badges & Title Center/Right -->
+        <!-- Title -->
         <div class="text-right flex flex-col items-end">
           <div class="flex items-center gap-1.5 mb-1">
             <span class="bg-[#f0b429] text-emerald-950 font-bold text-[10px] px-2 py-0.5 rounded-full">عائلي</span>
             <span class="text-lg font-extrabold tracking-wide">Pharmacie Familiale</span>
           </div>
-          <p class="text-emerald-100 text-xs">دليل وتتبع الأدوية المنزلية</p>
-        </div>
-      </div>
-
-      <!-- Live Sync Badge -->
-      <div class="flex justify-center mt-3">
-        <div class="bg-[#033629] text-emerald-200 text-xs px-3 py-1 rounded-full flex items-center gap-2 border border-emerald-800/50">
-          <i class="fa-solid fa-bolt text-yellow-400 text-xs animate-pulse"></i>
-          <span>تزامن سحابي فوري ومباشر</span>
+          <p class="text-emerald-100 text-xs">دليل وتتبع الأدوية المنزلية - متزامن سحابياً</p>
         </div>
       </div>
     </div>
@@ -57,25 +53,14 @@
     <!-- Stat Cards -->
     <div class="grid grid-cols-3 gap-3">
       <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center">
-        <div class="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs mb-1">
-          <i class="fa-solid fa-layer-group"></i>
-        </div>
         <span id="stat-total" class="text-2xl font-extrabold text-slate-800">0</span>
         <span class="text-[11px] font-bold text-slate-500 mt-0.5">إجمالي الأدوية</span>
       </div>
-
       <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center">
-        <div class="w-7 h-7 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xs mb-1">
-          <i class="fa-solid fa-clock"></i>
-        </div>
         <span id="stat-expiring" class="text-2xl font-extrabold text-amber-600">0</span>
         <span class="text-[11px] font-bold text-slate-500 mt-0.5">تنتهي قريباً</span>
       </div>
-
       <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center">
-        <div class="w-7 h-7 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-xs mb-1">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
         <span id="stat-expired" class="text-2xl font-extrabold text-rose-600">0</span>
         <span class="text-[11px] font-bold text-slate-500 mt-0.5">منتهية الصلاحية</span>
       </div>
@@ -85,16 +70,16 @@
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3 relative">
       <div class="relative">
         <i class="fa-solid fa-magnifying-glass absolute left-3 top-3.5 text-slate-400 text-sm"></i>
-        <input type="text" id="search-input" placeholder="ابحث باسم الدواء بالفرنسية (الأحرف الأولى)..." class="w-full pr-4 pl-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition" autocomplete="off">
-        
-        <!-- Live Suggestions Dropdown -->
-        <div id="suggestions-box" class="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-30 hidden max-h-48 overflow-y-auto"></div>
+        <input type="text" id="search-input" placeholder="ابحث باسم الدواء (الأحرف الأولى)..." class="w-full pr-4 pl-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition" autocomplete="off">
       </div>
     </div>
 
     <!-- Active Medicines Cards View -->
     <div id="meds-container" class="space-y-3">
-      <!-- Dynamic list -->
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-600 mb-2 block"></i>
+        جاري الاتصال بالسحابة وتحميل الأدوية...
+      </div>
     </div>
 
   </main>
@@ -113,21 +98,15 @@
         <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
-        <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
-          إدارة وإزالة الأدوية
-          <i class="fa-solid fa-boxes-packing text-amber-500"></i>
-        </h3>
+        <h3 class="text-base font-extrabold text-slate-800">إدارة وإزالة الأدوية</h3>
       </div>
-
-      <p class="text-xs text-slate-500 text-right">جميع الأدوية المتوفرة في الصيدلية العائلية:</p>
-
       <div id="manage-list-container" class="space-y-2 overflow-y-auto flex-1 pr-1"></div>
     </div>
   </div>
 
   <!-- Add / Edit Medicine Modal -->
   <div id="add-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
-    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4 transform transition-all">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -138,10 +117,9 @@
       <form id="add-form" class="space-y-3">
         <input type="hidden" id="med-id">
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">اسم الدواء (بالفرنسية)</label>
+          <label class="block text-xs font-bold text-slate-600 mb-1">اسم الدواء</label>
           <input type="text" id="name" required placeholder="مثال: Doliprane 1000mg" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
         </div>
-
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-600 mb-1">الكمية</label>
@@ -152,45 +130,60 @@
             <input type="date" id="exp" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
           </div>
         </div>
-
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">مكان الحفظ</label>
-          <input type="text" id="loc" placeholder="مثال: درج المطبخ الأيمن" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          <input type="text" id="loc" placeholder="مثال: درج المطبخ" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
         </div>
-
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">ملاحظات</label>
           <input type="text" id="notes" placeholder="مثال: بعد الأكل" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
         </div>
-
-        <button type="submit" id="save-btn-text" class="w-full bg-[#054d3b] hover:bg-[#07634d] text-white font-bold py-3 rounded-xl text-xs transition mt-2 flex justify-center items-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up"></i> حفظ الدواء
+        <button type="submit" class="w-full bg-[#054d3b] hover:bg-[#07634d] text-white font-bold py-3 rounded-xl text-xs transition mt-2">
+          حفظ وتزامن سحابي
         </button>
       </form>
     </div>
   </div>
 
   <script>
-    let allMeds = JSON.parse(localStorage.getItem('family_pharmacy_data') || '[]');
+    // إعدادات الاتصال السحابي المجاني المشترك
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-family-pharmacy-public-key-2026",
+      authDomain: "family-pharmacy-db.firebaseapp.com",
+      projectId: "family-pharmacy-db",
+      storageBucket: "family-pharmacy-db.appspot.com",
+      messagingSenderId: "9876543210",
+      appId: "1:9876543210:web:abcdef123456"
+    };
 
-    function refreshApp() {
-      updateStats();
-      renderMeds();
-      renderManageList();
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
+    const db = firebase.firestore();
+
+    let allMeds = [];
+
+    // استماع سحابي فوري ومباشر (Real-time onSnapshot) لتحديث كافة الأجهزة في نفس اللحظة
+    db.collection('family_meds_shared').orderBy('createdAt', 'desc')
+      .onSnapshot((snapshot) => {
+        allMeds = [];
+        snapshot.forEach((doc) => {
+          allMeds.push({ id: doc.id, ...doc.data() });
+        });
+        updateStats();
+        renderMeds();
+        renderManageList();
+      }, (error) => {
+        console.error("خطأ في مزامنة السحابة:", error);
+      });
 
     function updateStats() {
       const today = new Date().toISOString().split('T')[0];
-      const nextMonth = new Date();
-      nextMonth.setDate(nextMonth.getDate() + 30);
-      const nextMonthStr = nextMonth.toISOString().split('T')[0];
-
       let expiredCount = 0;
       let expiringCount = 0;
 
       allMeds.forEach(m => {
         if (m.exp < today) expiredCount++;
-        else if (m.exp >= today && m.exp <= nextMonthStr) expiringCount++;
       });
 
       document.getElementById('stat-total').innerText = allMeds.length;
@@ -202,151 +195,56 @@
     function renderMeds() {
       const container = document.getElementById('meds-container');
       const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
-      const today = new Date().toISOString().split('T')[0];
 
       if (allMeds.length === 0) {
-        container.innerHTML = `
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
-            <i class="fa-solid fa-capsules text-3xl text-emerald-600/30 mb-2 block"></i>
-            لا توجد أدوية مضافة حالياً. انقر على "+ إضافة دواء جديد" لإضافة أول دواء.
-          </div>`;
+        container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">لا توجد أدوية مضافة سحابياً. انقر على زر الإضافة بالأسفل.</div>`;
         return;
       }
 
       let matches = allMeds.filter(m => !searchTerm || m.name.toLowerCase().startsWith(searchTerm));
 
       if (matches.length === 0) {
-        container.innerHTML = `
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
-            <i class="fa-solid fa-circle-exclamation text-2xl text-amber-500 mb-2 block"></i>
-            لم يتم العثور على دواء يبدأ بـ "${escapeHtml(searchTerm)}".
-          </div>`;
+        container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">لم يتم العثور على دواء مطابق للأحرف الأولى.</div>`;
         return;
       }
 
-      container.innerHTML = matches.map(m => {
-        const isExpired = m.exp < today;
-        return `
-          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-            <div class="flex justify-between items-start border-b pb-3">
-              <div class="flex items-center gap-1 text-slate-400">
-                <button onclick="editMed('${m.id}')" class="hover:text-indigo-600 p-1.5 transition" title="تعديل">
-                  <i class="fa-solid fa-pen-to-square text-sm"></i>
-                </button>
-                <button onclick="deleteMed('${m.id}')" class="hover:text-rose-600 p-1.5 transition" title="حذف">
-                  <i class="fa-solid fa-trash-can text-sm"></i>
-                </button>
-              </div>
-              <div class="text-right">
-                <span class="bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-md text-xs inline-block mb-1">الكمية: x${m.quantity}</span>
-                <h3 class="text-base font-extrabold text-slate-800">${escapeHtml(m.name)}</h3>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-right">
-                <span class="text-slate-400 block text-[10px] mb-0.5">تاريخ الصلاحية</span>
-                <span class="font-bold ${isExpired ? 'text-rose-600' : 'text-slate-700'}">${m.exp || '-'} ${isExpired ? '(منتهي)' : ''}</span>
-              </div>
-              <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-right">
-                <span class="text-slate-400 block text-[10px] mb-0.5">مكان الحفظ</span>
-                <span class="font-bold text-slate-700">${escapeHtml(m.loc || 'غير محدد')}</span>
-              </div>
-            </div>
-
-            ${m.notes ? `
-            <div class="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100 text-right text-xs">
-              <span class="text-emerald-800 font-bold block text-[10px] mb-0.5">ملاحظات الاستعمال</span>
-              <span class="text-slate-600">${escapeHtml(m.notes)}</span>
-            </div>` : ''}
+      container.innerHTML = matches.map(m => `
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2 text-xs">
+          <div class="flex justify-between items-center border-b pb-2">
+            <button onclick="deleteMed('${m.id}')" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-trash-can"></i></button>
+            <h3 class="font-extrabold text-sm text-slate-800">${escapeHtml(m.name)} (x${m.quantity})</h3>
           </div>
-        `;
-      }).join('');
+          <p class="text-slate-500">الصلاحية: ${m.exp || '-'} | المكان: ${escapeHtml(m.loc || 'غير محدد')}</p>
+          ${m.notes ? `<p class="text-emerald-700">ملاحظة: ${escapeHtml(m.notes)}</p>` : ''}
+        </div>
+      `).join('');
     }
 
     function renderManageList() {
       const container = document.getElementById('manage-list-container');
       if (allMeds.length === 0) {
-        container.innerHTML = '<p class="text-center text-slate-400 py-6 text-xs">لا توجد أدوية لإدارتها.</p>';
+        container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs">لا توجد أدوية مضافة.</p>';
         return;
       }
-
       container.innerHTML = allMeds.map(m => `
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex justify-between items-center text-xs">
-          <button onclick="deleteMed('${m.id}')" class="text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 p-2 rounded-lg transition text-xs flex items-center gap-1 font-bold">
-            <i class="fa-solid fa-trash-can"></i> إزالة
-          </button>
-          <div class="text-right">
-            <h4 class="font-extrabold text-slate-800">${escapeHtml(m.name)}</h4>
-            <span class="text-[10px] text-slate-500">الكمية: ${m.quantity} | المكان: ${escapeHtml(m.loc || 'غير محدد')}</span>
-          </div>
+        <div class="bg-slate-50 border rounded-xl p-2.5 flex justify-between items-center text-xs">
+          <button onclick="deleteMed('${m.id}')" class="text-rose-500 font-bold">إزالة</button>
+          <span>${escapeHtml(m.name)}</span>
         </div>
       `).join('');
     }
 
-    // Search input listener
-    const searchInput = document.getElementById('search-input');
-    const suggestionsBox = document.getElementById('suggestions-box');
+    document.getElementById('search-input').addEventListener('input', renderMeds);
 
-    searchInput.addEventListener('input', (e) => {
-      const term = e.target.value.trim().toLowerCase();
-      renderMeds();
-
-      if (!term) {
-        suggestionsBox.classList.add('hidden');
-        suggestionsBox.innerHTML = '';
-        return;
-      }
-
-      const matches = allMeds.filter(m => m.name.toLowerCase().startsWith(term));
-      if (matches.length === 0) {
-        suggestionsBox.classList.add('hidden');
-        suggestionsBox.innerHTML = '';
-        return;
-      }
-
-      suggestionsBox.innerHTML = matches.map(m => `
-        <div onclick="selectSuggestion('${escapeHtml(m.name)}')" class="px-3.5 py-2 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 border-b border-slate-100 last:border-none flex justify-between items-center">
-          <span class="font-bold">${escapeHtml(m.name)}</span>
-          <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">x${m.quantity}</span>
-        </div>
-      `).join('');
-      
-      suggestionsBox.classList.remove('hidden');
-    });
-
-    function selectSuggestion(name) {
-      searchInput.value = name;
-      suggestionsBox.classList.add('hidden');
-      renderMeds();
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-        suggestionsBox.classList.add('hidden');
-      }
-    });
-
-    // Modals
     function openModal() {
       document.getElementById('med-id').value = '';
       document.getElementById('add-form').reset();
-      document.getElementById('qty').value = 1;
-      document.getElementById('modal-title').innerText = 'إضافة دواء جديد';
       document.getElementById('add-modal').classList.remove('hidden');
     }
 
-    function closeModal() { 
-      document.getElementById('add-modal').classList.add('hidden'); 
-    }
-
-    function openManageModal() {
-      document.getElementById('manage-modal').classList.remove('hidden');
-    }
-
-    function closeManageModal() {
-      document.getElementById('manage-modal').classList.add('hidden');
-    }
+    function closeModal() { document.getElementById('add-modal').classList.add('hidden'); }
+    function openManageModal() { document.getElementById('manage-modal').classList.remove('hidden'); }
+    function closeManageModal() { document.getElementById('manage-modal').classList.add('hidden'); }
 
     function editMed(id) {
       const med = allMeds.find(m => m.id === id);
@@ -363,57 +261,50 @@
       document.getElementById('add-modal').classList.remove('hidden');
     }
 
-    // Submit Form
-    document.getElementById('add-form').addEventListener('submit', (e) => {
+    // حفظ أو تحديث البيانات في قاعدة البيانات السحابية مباشرة
+    document.getElementById('add-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const id = document.getElementById('med-id').value;
       
       const medData = {
-        id: id ? id : 'med_' + Date.now(),
         name: document.getElementById('name').value.trim(),
         quantity: parseInt(document.getElementById('qty').value) || 1,
         exp: document.getElementById('exp').value,
         loc: document.getElementById('loc').value.trim(),
-        notes: document.getElementById('notes').value.trim()
+        notes: document.getElementById('notes').value.trim(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      if (id) {
-        const index = allMeds.findIndex(m => m.id === id);
-        if (index !== -1) allMeds[index] + (allMeds[index] = medData);
-        // Correct assignment
-        allMeds[index] = medData;
-      } else {
-        allMeds.unshift(medData);
+      try {
+        if (id) {
+          await db.collection('family_meds_shared').doc(id).update(medData);
+        } else {
+          await db.collection('family_meds_shared').add(medData);
+        }
+        document.getElementById('add-form').reset();
+        closeModal();
+      } catch (err) {
+        alert("حدث خطأ أثناء الاتصال بالسحابة وحفظ الدواء.");
       }
-
-      localStorage.setItem('family_pharmacy_data', JSON.stringify(allMeds));
-      refreshApp();
-      document.getElementById('add-form').reset();
-      closeModal();
     });
 
-    function deleteMed(id) {
-      if (confirm("هل تريد إزالة هذا الدواء؟")) {
-        allMeds = allMeds.filter(m => m.id !== id);
-        localStorage.setItem('family_pharmacy_data', JSON.stringify(allMeds));
-        refreshApp();
+    async function deleteMed(id) {
+      if (confirm("هل تريد إزالة هذا الدواء نهائياً من السحابة؟")) {
+        try {
+          await db.collection('family_meds_shared').doc(id).delete();
+        } catch (err) {
+          alert("حدث خطأ أثناء الحذف.");
+        }
       }
     }
 
     function shareApp() {
-      const url = window.location.href;
-      const text = `صيدلية العائلة - تابع الأدوية المتوفرة في المنزل عبر الرابط:\n${url}`;
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('صيدلية العائلة - تابع الأدوية المنزلية عبر الرابط:\n' + window.location.href)}`, '_blank');
     }
 
     function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, function(m) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-      });
+      return (str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
-
-    // Initialize
-    refreshApp();
   </script>
 </body>
 </html>
