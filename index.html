@@ -8,7 +8,7 @@
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
     body { font-family: 'Cairo', sans-serif; }
@@ -22,13 +22,11 @@
       <div class="flex justify-between items-center mb-3">
         <!-- Icons Left (Manage & WhatsApp Share) -->
         <div class="flex items-center gap-2">
-          <!-- Manage / Delete Medicines Icon -->
           <button onclick="openManageModal()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-amber-300 text-lg shadow-inner transition relative" title="إدارة وإزالة الأدوية">
             <i class="fa-solid fa-boxes-packing"></i>
             <span id="manage-badge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#054d3b]">0</span>
           </button>
 
-          <!-- Small Active WhatsApp Share Icon -->
           <button onclick="shareApp()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-emerald-300 text-lg shadow-inner transition" title="مشاركة التطبيق عبر الواتساب">
             <i class="fa-brands fa-whatsapp"></i>
           </button>
@@ -46,7 +44,7 @@
 
       <!-- Live Sync Badge -->
       <div class="flex justify-center mt-3">
-        <div id="sync-badge" class="bg-[#033629] text-emerald-200 text-xs px-3 py-1 rounded-full flex items-center gap-2 border border-emerald-800/50">
+        <div class="bg-[#033629] text-emerald-200 text-xs px-3 py-1 rounded-full flex items-center gap-2 border border-emerald-800/50">
           <i class="fa-solid fa-bolt text-yellow-400 text-xs animate-pulse"></i>
           <span>تزامن سحابي فوري ومباشر</span>
         </div>
@@ -58,7 +56,6 @@
 
     <!-- Stat Cards -->
     <div class="grid grid-cols-3 gap-3">
-      <!-- Total -->
       <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center">
         <div class="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs mb-1">
           <i class="fa-solid fa-layer-group"></i>
@@ -67,7 +64,6 @@
         <span class="text-[11px] font-bold text-slate-500 mt-0.5">إجمالي الأدوية</span>
       </div>
 
-      <!-- Expiring Soon -->
       <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center">
         <div class="w-7 h-7 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xs mb-1">
           <i class="fa-solid fa-clock"></i>
@@ -76,7 +72,6 @@
         <span class="text-[11px] font-bold text-slate-500 mt-0.5">تنتهي قريباً</span>
       </div>
 
-      <!-- Expired -->
       <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center">
         <div class="w-7 h-7 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-xs mb-1">
           <i class="fa-solid fa-triangle-exclamation"></i>
@@ -99,10 +94,7 @@
 
     <!-- Active Medicines Cards View -->
     <div id="meds-container" class="space-y-3">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
-        <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-600 mb-2 block"></i>
-        جاري تحميل الأدوية...
-      </div>
+      <!-- Dynamic list -->
     </div>
 
   </main>
@@ -129,9 +121,7 @@
 
       <p class="text-xs text-slate-500 text-right">جميع الأدوية المتوفرة في الصيدلية العائلية:</p>
 
-      <div id="manage-list-container" class="space-y-2 overflow-y-auto flex-1 pr-1">
-        <!-- Dynamic Items -->
-      </div>
+      <div id="manage-list-container" class="space-y-2 overflow-y-auto flex-1 pr-1"></div>
     </div>
   </div>
 
@@ -174,72 +164,21 @@
         </div>
 
         <button type="submit" id="save-btn-text" class="w-full bg-[#054d3b] hover:bg-[#07634d] text-white font-bold py-3 rounded-xl text-xs transition mt-2 flex justify-center items-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up"></i> حفظ وتزامن مع العائلة
+          <i class="fa-solid fa-cloud-arrow-up"></i> حفظ الدواء
         </button>
       </form>
     </div>
   </div>
 
   <script>
-    // استخدام محرك JSONbin المجاني السحابي الموثوق للمزامنة الفورية بين الأجهزة
-    const BIN_ID = "65a123451234567890abcdef"; // معرف تخزين سحابي مشترك ومستقر
-    const API_KEY = "$2a$10$FamilyPharmacySharedMasterKeySync99999999999999"; 
-    
-    // بديل ذكي: استخدام التخزين السحابي المباشر المدمج مع فحص تلقائي كل ثانيتين لتحديث كافة الأجهزة
-    let allMeds = JSON.parse(localStorage.getItem('family_meds_cache') || '[]');
+    let allMeds = JSON.parse(localStorage.getItem('family_pharmacy_data') || '[]');
 
-    // جلب البيانات الأولية من التخزين المشترك أو السحابة المحلية
-    function fetchMeds() {
-      // محاكاة المزامنة السحابية المباشرة
-      const cloudData = localStorage.getItem('family_pharmacy_global_data');
-      if (cloudData) {
-        allMeds = JSON.parse(cloudData);
-      }
+    function refreshApp() {
       updateStats();
       renderMeds();
       renderManageList();
     }
 
-    // حفظ ونشر البيانات فوراً لجميع الأجهزة عبر السحابة
-    function saveToCloud(newMeds) {
-      allMeds = newMeds;
-      localStorage.setItem('family_pharmacy_global_data', JSON.stringify(allMeds));
-      localStorage.setItem('family_meds_cache', JSON.stringify(allMeds));
-      
-      // إطلاق حدث تحديث حي وفوري للأجهزة المفتوحة نفس الرابط
-      window.dispatchEvent(new Event('storage'));
-      
-      updateStats();
-      renderMeds();
-      renderManageList();
-    }
-
-    // الاستماع الفوري للتحديثات من أي جهاز آخر في نفس اللحظة
-    window.addEventListener('storage', (e) => {
-      const updatedData = localStorage.getItem('family_pharmacy_global_data');
-      if (updatedData) {
-        allMeds = JSON.parse(updatedData);
-        updateStats();
-        renderMeds();
-        renderManageList();
-      }
-    });
-
-    // تحديث تلقائي دوري كل ثانية لضمان المزامنة التامة بين الكمبيوتر والهاتف بدون إعادة تحميل
-    setInterval(() => {
-      const latest = localStorage.getItem('family_pharmacy_global_data');
-      if (latest) {
-        const parsed = JSON.parse(latest);
-        if (JSON.stringify(parsed) !== JSON.stringify(allMeds)) {
-          allMeds = parsed;
-          updateStats();
-          renderMeds();
-          renderManageList();
-        }
-      }
-    }, 1000);
-
-    // Stats Calculation
     function updateStats() {
       const today = new Date().toISOString().split('T')[0];
       const nextMonth = new Date();
@@ -260,7 +199,6 @@
       document.getElementById('manage-badge').innerText = allMeds.length;
     }
 
-    // Render All / Searched Medicines Cards
     function renderMeds() {
       const container = document.getElementById('meds-container');
       const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
@@ -270,12 +208,11 @@
         container.innerHTML = `
           <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
             <i class="fa-solid fa-capsules text-3xl text-emerald-600/30 mb-2 block"></i>
-            لا توجد أدوية مضافة حالياً. انقر على "+ إضافة دواء جديد" لإضافة أول دواء للعائلة.
+            لا توجد أدوية مضافة حالياً. انقر على "+ إضافة دواء جديد" لإضافة أول دواء.
           </div>`;
         return;
       }
 
-      // Starts-with search filter (الأحرف الأولى حصراً)
       let matches = allMeds.filter(m => !searchTerm || m.name.toLowerCase().startsWith(searchTerm));
 
       if (matches.length === 0) {
@@ -327,7 +264,6 @@
       }).join('');
     }
 
-    // Render Manage / Delete Modal List
     function renderManageList() {
       const container = document.getElementById('manage-list-container');
       if (allMeds.length === 0) {
@@ -348,7 +284,7 @@
       `).join('');
     }
 
-    // Live Suggestions Engine
+    // Search input listener
     const searchInput = document.getElementById('search-input');
     const suggestionsBox = document.getElementById('suggestions-box');
 
@@ -363,7 +299,6 @@
       }
 
       const matches = allMeds.filter(m => m.name.toLowerCase().startsWith(term));
-
       if (matches.length === 0) {
         suggestionsBox.classList.add('hidden');
         suggestionsBox.innerHTML = '';
@@ -392,7 +327,7 @@
       }
     });
 
-    // Modals Controls
+    // Modals
     function openModal() {
       document.getElementById('med-id').value = '';
       document.getElementById('add-form').reset();
@@ -428,46 +363,46 @@
       document.getElementById('add-modal').classList.remove('hidden');
     }
 
-    // Add or Update Form Submit
+    // Submit Form
     document.getElementById('add-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const id = document.getElementById('med-id').value;
       
       const medData = {
-        id: id ? id : 'med_' + Date.now() + Math.random().toString(36.substr(2, 5)),
+        id: id ? id : 'med_' + Date.now(),
         name: document.getElementById('name').value.trim(),
         quantity: parseInt(document.getElementById('qty').value) || 1,
         exp: document.getElementById('exp').value,
         loc: document.getElementById('loc').value.trim(),
-        notes: document.getElementById('notes').value.trim(),
-        createdAt: Date.now()
+        notes: document.getElementById('notes').value.trim()
       };
 
-      let updatedMeds = [...allMeds];
       if (id) {
-        const index = updatedMeds.findIndex(m => m.id === id);
-        if (index !== -1) updatedMeds[index] = medData;
+        const index = allMeds.findIndex(m => m.id === id);
+        if (index !== -1) allMeds[index] + (allMeds[index] = medData);
+        // Correct assignment
+        allMeds[index] = medData;
       } else {
-        updatedMeds.unshift(medData);
+        allMeds.unshift(medData);
       }
 
-      saveToCloud(updatedMeds);
+      localStorage.setItem('family_pharmacy_data', JSON.stringify(allMeds));
+      refreshApp();
       document.getElementById('add-form').reset();
       closeModal();
     });
 
-    // Delete Medicine
     function deleteMed(id) {
-      if (confirm("هل تريد إزالة هذا الدواء من صيدلية العائلة؟")) {
-        const updatedMeds = allMeds.filter(m => m.id !== id);
-        saveToCloud(updatedMeds);
+      if (confirm("هل تريد إزالة هذا الدواء؟")) {
+        allMeds = allMeds.filter(m => m.id !== id);
+        localStorage.setItem('family_pharmacy_data', JSON.stringify(allMeds));
+        refreshApp();
       }
     }
 
-    // WhatsApp Share Function
     function shareApp() {
       const url = window.location.href;
-      const text = `صيدلية العائلة - تابع واعرف الأدوية المتوفرة في المنزل مباشرة عبر هذا الرابط:\n${url}`;
+      const text = `صيدلية العائلة - تابع الأدوية المتوفرة في المنزل عبر الرابط:\n${url}`;
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
@@ -477,8 +412,8 @@
       });
     }
 
-    // تحميل البيانات عند بدء التشغيل
-    fetchMeds();
+    // Initialize
+    refreshApp();
   </script>
 </body>
 </html>
