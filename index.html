@@ -2,9 +2,19 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Pharmacie Family</title>
   
+  <!-- إعدادات تحويل الموقع لتطبيق (PWA Meta Tags) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pharmacie">
+  
+  <!-- أيقونة التطبيق التي ستظهر على شاشة الهاتف -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23054d3b' rx='110'/%3E%3Cpath fill='white' d='M256 120v272M120 256h272' stroke='white' stroke-width='55' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23054d3b' rx='110'/%3E%3Cpath fill='white' d='M256 120v272M120 256h272' stroke='white' stroke-width='55' stroke-linecap='round'/%3E%3C/svg%3E">
+
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,26 +30,36 @@
   <header class="bg-[#054d3b] text-white pt-5 pb-6 px-4 shadow-lg rounded-b-3xl">
     <div class="max-w-md mx-auto">
       <div class="flex justify-between items-center mb-3">
-        <!-- Icons Left (Refresh, Manage, WhatsApp) -->
-        <div class="flex items-center gap-2">
+        <!-- Icons Left -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
           
-          <button onclick="fetchSheetData()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-sky-300 text-lg shadow-inner transition" title="تحديث البيانات">
+          <button onclick="fetchSheetData()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-sky-300 text-base sm:text-lg shadow-inner transition" title="تحديث البيانات">
             <i id="refresh-icon" class="fa-solid fa-arrows-rotate"></i>
           </button>
 
-          <button onclick="openManageModal()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-amber-300 text-lg shadow-inner transition relative" title="إدارة وإزالة الأدوية">
+          <button onclick="openManageModal()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-amber-300 text-base sm:text-lg shadow-inner transition relative" title="إدارة وإزالة الأدوية">
             <i class="fa-solid fa-boxes-packing"></i>
             <span id="manage-badge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#054d3b]">0</span>
           </button>
 
-          <button onclick="shareApp()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-emerald-300 text-lg shadow-inner transition" title="مشاركة التطبيق">
+          <button onclick="shareApp()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-emerald-300 text-base sm:text-lg shadow-inner transition" title="مشاركة التطبيق">
             <i class="fa-brands fa-whatsapp"></i>
+          </button>
+
+          <!-- زر تثبيت التطبيق الجديد -->
+          <button onclick="openInstallModal()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/20 hover:bg-white/30 flex justify-center items-center text-white text-base sm:text-lg shadow-inner transition" title="تثبيت في الشاشة الرئيسية">
+            <i class="fa-solid fa-mobile-screen-button"></i>
           </button>
         </div>
 
-        <!-- Title -->
+        <!-- Title & Logo -->
         <div class="text-right flex flex-col items-end justify-center pt-1">
-          <span class="text-xl font-extrabold tracking-wide">Pharmacie Family</span>
+          <div class="flex items-center gap-2">
+            <span class="text-lg sm:text-xl font-extrabold tracking-wide">Pharmacie Family</span>
+            <div class="bg-white/20 w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-inner">
+              <i class="fa-solid fa-prescription-bottle-medical text-white text-sm sm:text-lg"></i>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -86,6 +106,42 @@
     <button onclick="openModal()" class="w-full bg-[#0d9488] hover:bg-teal-600 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-xl transition flex justify-center items-center gap-2 text-sm border border-teal-400/30">
       <i class="fa-solid fa-plus text-lg"></i> إضافة دواء جديد
     </button>
+  </div>
+
+  <!-- Install App Modal (نافذة التثبيت) -->
+  <div id="install-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <button onclick="closeInstallModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <h3 class="text-base font-extrabold text-slate-800"><i class="fa-solid fa-mobile-screen-button text-[#054d3b] ml-1"></i> تثبيت التطبيق</h3>
+      </div>
+      <div class="text-sm text-slate-600 space-y-3">
+        <p class="font-bold text-emerald-800 bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-xs leading-relaxed">
+          يمكنك إضافة هذه الصيدلية كبرنامج عادي في شاشة هاتفك الرئيسية للوصول السريع بدون كتابة الرابط!
+        </p>
+        
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+          <h4 class="font-extrabold text-slate-800 mb-2"><i class="fa-brands fa-apple text-slate-500 ml-1 text-lg"></i> لأجهزة الآيفون (Safari):</h4>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs">
+            <li>اضغط على زر المشاركة <i class="fa-solid fa-arrow-up-from-bracket mx-1 border bg-white rounded p-0.5"></i> في أسفل الشاشة.</li>
+            <li>اختر <b>"إضافة إلى الصفحة الرئيسية"</b> <i class="fa-solid fa-square-plus mx-1 text-slate-400"></i>.</li>
+          </ol>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+          <h4 class="font-extrabold text-slate-800 mb-2"><i class="fa-brands fa-android text-emerald-500 ml-1 text-lg"></i> لأجهزة الأندرويد (Chrome):</h4>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs">
+            <li>اضغط على الثلاث نقاط <i class="fa-solid fa-ellipsis-vertical mx-1"></i> في أعلى يمين/يسار المتصفح.</li>
+            <li>اختر <b>"الإضافة إلى الشاشة الرئيسية"</b> <i class="fa-solid fa-mobile-screen mx-1 text-slate-400"></i>.</li>
+          </ol>
+        </div>
+      </div>
+      <button onclick="closeInstallModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-xl text-xs transition mt-2">
+        حسناً، فهمت
+      </button>
+    </div>
   </div>
 
   <!-- Manage / Delete Medicines Modal -->
@@ -238,6 +294,10 @@
     function closeModal() { document.getElementById('add-modal').classList.add('hidden'); }
     function openManageModal() { document.getElementById('manage-modal').classList.remove('hidden'); }
     function closeManageModal() { document.getElementById('manage-modal').classList.add('hidden'); }
+    
+    /* دوال نافذة تثبيت التطبيق */
+    function openInstallModal() { document.getElementById('install-modal').classList.remove('hidden'); }
+    function closeInstallModal() { document.getElementById('install-modal').classList.add('hidden'); }
 
     document.getElementById('add-form').addEventListener('submit', async (e) => {
       e.preventDefault();
