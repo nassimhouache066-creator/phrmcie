@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pharmacie Familiale - دليل الأدوية</title>
+  <title>Pharmacie Family</title>
   
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -38,12 +38,8 @@
         </div>
 
         <!-- Title -->
-        <div class="text-right flex flex-col items-end">
-          <div class="flex items-center gap-1.5 mb-1">
-            <span class="bg-[#f0b429] text-emerald-950 font-bold text-[10px] px-2 py-0.5 rounded-full">عائلي مجاني</span>
-            <span class="text-lg font-extrabold tracking-wide">Pharmacie</span>
-          </div>
-          <p class="text-emerald-100 text-[10px]">Google Apps Script (غير محدود)</p>
+        <div class="text-right flex flex-col items-end justify-center pt-1">
+          <span class="text-xl font-extrabold tracking-wide">Pharmacie Family</span>
         </div>
       </div>
     </div>
@@ -146,15 +142,13 @@
   </div>
 
   <script>
-    // الرابط الدائم والمجاني الخاص بك
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBy6VMkNOokA0wRIsOUVcLgOyAgZtAm1q0zd08gx5RLQjL8Y6bNlUnGNpbSutXFDXDog/exec";
 
     let allMeds = [];
 
-    // جلب البيانات من Google Sheet
     async function fetchSheetData() {
       const icon = document.getElementById('refresh-icon');
-      icon.classList.add('fa-spin'); // تشغيل حركة الدوران
+      icon.classList.add('fa-spin');
       
       try {
         const res = await fetch(SCRIPT_URL);
@@ -163,7 +157,7 @@
         console.error("خطأ:", e);
       }
       
-      icon.classList.remove('fa-spin'); // إيقاف الحركة
+      icon.classList.remove('fa-spin');
       refreshUI();
     }
 
@@ -179,7 +173,6 @@
       let expiringCount = 0;
 
       allMeds.forEach(m => {
-        // تحويل التاريخ من صيغة جوجل إلى صيغة قابلة للقراءة
         let expDate = m.exp ? new Date(m.exp).toISOString().split('T')[0] : '';
         if (expDate && expDate < today) expiredCount++;
       });
@@ -246,7 +239,6 @@
     function openManageModal() { document.getElementById('manage-modal').classList.remove('hidden'); }
     function closeManageModal() { document.getElementById('manage-modal').classList.add('hidden'); }
 
-    // حفظ دواء جديد
     document.getElementById('add-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('save-btn');
@@ -270,7 +262,7 @@
         
         document.getElementById('add-form').reset();
         closeModal();
-        await fetchSheetData(); // تحديث القائمة فوراً
+        await fetchSheetData();
       } catch (err) {
         console.error(err);
       }
@@ -279,11 +271,9 @@
       btn.disabled = false;
     });
 
-    // حذف دواء
     async function deleteMed(id) {
       if (confirm("هل أنت متأكد من إزالة هذا الدواء نهائياً؟")) {
         try {
-          // نعرض تحميل وهمي سريع لحين الرد من السيرفر
           document.getElementById('meds-container').innerHTML = `<div class="text-center text-slate-400 text-xs p-6"><i class="fa-solid fa-spinner fa-spin text-2xl text-rose-500 mb-2 block"></i>جاري الحذف...</div>`;
           
           await fetch(SCRIPT_URL, {
@@ -306,7 +296,6 @@
       return (str || '').toString().replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
-    // جلب البيانات أول مرة فقط عند فتح التطبيق
     fetchSheetData();
   </script>
 </body>
