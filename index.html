@@ -9,11 +9,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Pharmacie">
+  <meta name="apple-mobile-web-app-title" content="Pharmacie Family">
   
-  <!-- أيقونة التطبيق التي ستظهر على شاشة الهاتف -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23054d3b' rx='110'/%3E%3Cpath fill='white' d='M256 120v272M120 256h272' stroke='white' stroke-width='55' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23054d3b' rx='110'/%3E%3Cpath fill='white' d='M256 120v272M120 256h272' stroke='white' stroke-width='55' stroke-linecap='round'/%3E%3C/svg%3E">
+  <!-- الشعار الصيدلاني الرسمي كأيقونة للتطبيق على شاشة الهاتف -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23ffffff' rx='110'/%3E%3Cpath fill='%2310b981' d='M180 40h152c11 0 20 9 20 20v120h120c11 0 20 9 20 20v152c0 11-9 20-20 20H352v120c0 11-9 20-20 20H180c-11 0-20-9-20-20V372H40c-11 0-20-9-20-20V200c0-11 9-20 20-20h120V60c0-11 9-20 20-20z'/%3E%3Cpath fill='%23ffffff' d='M215 105h82v110h110v82H297v110h-82V297H105v-82h110z'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23ffffff' rx='110'/%3E%3Cpath fill='%2310b981' d='M180 40h152c11 0 20 9 20 20v120h120c11 0 20 9 20 20v152c0 11-9 20-20 20H352v120c0 11-9 20-20 20H180c-11 0-20-9-20-20V372H40c-11 0-20-9-20-20V200c0-11 9-20 20-20h120V60c0-11 9-20 20-20z'/%3E%3Cpath fill='%23ffffff' d='M215 105h82v110h110v82H297v110h-82V297H105v-82h110z'/%3E%3C/svg%3E">
 
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -46,19 +46,23 @@
             <i class="fa-brands fa-whatsapp"></i>
           </button>
 
-          <!-- زر تثبيت التطبيق الجديد -->
+          <!-- زر تثبيت التطبيق -->
           <button onclick="openInstallModal()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/20 hover:bg-white/30 flex justify-center items-center text-white text-base sm:text-lg shadow-inner transition" title="تثبيت في الشاشة الرئيسية">
             <i class="fa-solid fa-mobile-screen-button"></i>
           </button>
         </div>
 
-        <!-- Title & Logo -->
+        <!-- Title & Pharmacy Logo -->
         <div class="text-right flex flex-col items-end justify-center pt-1">
           <div class="flex items-center gap-2">
             <span class="text-lg sm:text-xl font-extrabold tracking-wide">Pharmacie Family</span>
-            <div class="bg-white/20 w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-inner">
-              <i class="fa-solid fa-prescription-bottle-medical text-white text-sm sm:text-lg"></i>
-            </div>
+            
+            <!-- الشعار الصيدلاني الأخضر الرسمي (بدون مربع) -->
+            <svg class="w-8 h-8 sm:w-9 sm:h-9 drop-shadow-md" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M36 6C36 3.79 37.79 2 40 2H60C62.21 2 64 3.79 64 6V36H94C96.21 36 98 37.79 98 40V60C98 62.21 96.21 64 94 64H64V94C64 96.21 62.21 98 60 98H40C37.79 98 36 96.21 36 94V64H6C3.79 64 2 62.21 2 60V40C2 37.79 3.79 36 6 36H36V6Z" fill="#10B981"/>
+              <path d="M42 16H58V42H84V58H58V84H42V58H16V42H42V16Z" fill="#FFFFFF"/>
+              <rect x="46" y="46" width="8" height="8" rx="2" fill="#10B981"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -108,7 +112,7 @@
     </button>
   </div>
 
-  <!-- Install App Modal (نافذة التثبيت) -->
+  <!-- Install App Modal -->
   <div id="install-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
@@ -295,7 +299,6 @@
     function openManageModal() { document.getElementById('manage-modal').classList.remove('hidden'); }
     function closeManageModal() { document.getElementById('manage-modal').classList.add('hidden'); }
     
-    /* دوال نافذة تثبيت التطبيق */
     function openInstallModal() { document.getElementById('install-modal').classList.remove('hidden'); }
     function closeInstallModal() { document.getElementById('install-modal').classList.add('hidden'); }
 
