@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pharmacie Familiale - دليل وتتبع الأدوية المنزلية</title>
+  <title>Pharmacie Familiale - دليل الأدوية</title>
   
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -20,14 +20,19 @@
   <header class="bg-[#054d3b] text-white pt-5 pb-6 px-4 shadow-lg rounded-b-3xl">
     <div class="max-w-md mx-auto">
       <div class="flex justify-between items-center mb-3">
-        <!-- Icons Left (Manage & WhatsApp Share) -->
+        <!-- Icons Left (Refresh, Manage, WhatsApp) -->
         <div class="flex items-center gap-2">
+          
+          <button onclick="fetchSheetData()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-sky-300 text-lg shadow-inner transition" title="تحديث البيانات">
+            <i id="refresh-icon" class="fa-solid fa-arrows-rotate"></i>
+          </button>
+
           <button onclick="openManageModal()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-amber-300 text-lg shadow-inner transition relative" title="إدارة وإزالة الأدوية">
             <i class="fa-solid fa-boxes-packing"></i>
             <span id="manage-badge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#054d3b]">0</span>
           </button>
 
-          <button onclick="shareApp()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-emerald-300 text-lg shadow-inner transition" title="مشاركة التطبيق عبر الواتساب">
+          <button onclick="shareApp()" class="w-10 h-10 rounded-2xl bg-[#09634e] hover:bg-[#0c785f] flex justify-center items-center text-emerald-300 text-lg shadow-inner transition" title="مشاركة التطبيق">
             <i class="fa-brands fa-whatsapp"></i>
           </button>
         </div>
@@ -35,10 +40,10 @@
         <!-- Title -->
         <div class="text-right flex flex-col items-end">
           <div class="flex items-center gap-1.5 mb-1">
-            <span class="bg-[#f0b429] text-emerald-950 font-bold text-[10px] px-2 py-0.5 rounded-full">عائلي</span>
-            <span class="text-lg font-extrabold tracking-wide">Pharmacie Familiale</span>
+            <span class="bg-[#f0b429] text-emerald-950 font-bold text-[10px] px-2 py-0.5 rounded-full">عائلي مجاني</span>
+            <span class="text-lg font-extrabold tracking-wide">Pharmacie</span>
           </div>
-          <p class="text-emerald-100 text-xs">متزامن سحابياً عبر Google Sheets</p>
+          <p class="text-emerald-100 text-[10px]">Google Apps Script (غير محدود)</p>
         </div>
       </div>
     </div>
@@ -74,7 +79,7 @@
     <div id="meds-container" class="space-y-3">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
         <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-600 mb-2 block"></i>
-        جاري جلب الأدوية من جدول جوجل...
+        جاري جلب الأدوية من السحابة...
       </div>
     </div>
 
@@ -94,13 +99,13 @@
         <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 p-1">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
-        <h3 class="text-base font-extrabold text-slate-800">إدارة وإزالة الأدوية</h3>
+        <h3 class="text-base font-extrabold text-slate-800">إدارة الأدوية</h3>
       </div>
       <div id="manage-list-container" class="space-y-2 overflow-y-auto flex-1 pr-1"></div>
     </div>
   </div>
 
-  <!-- Add / Edit Medicine Modal -->
+  <!-- Add Medicine Modal -->
   <div id="add-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
@@ -111,7 +116,6 @@
       </div>
 
       <form id="add-form" class="space-y-3">
-        <input type="hidden" id="med-id">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">اسم الدواء</label>
           <input type="text" id="name" required placeholder="مثال: Doliprane 1000mg" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
@@ -134,7 +138,7 @@
           <label class="block text-xs font-bold text-slate-600 mb-1">ملاحظات</label>
           <input type="text" id="notes" placeholder="مثال: بعد الأكل" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
         </div>
-        <button type="submit" class="w-full bg-[#054d3b] hover:bg-[#07634d] text-white font-bold py-3 rounded-xl text-xs transition mt-2">
+        <button type="submit" id="save-btn" class="w-full bg-[#054d3b] hover:bg-[#07634d] text-white font-bold py-3 rounded-xl text-xs transition mt-2">
           حفظ في جدول جوجل
         </button>
       </form>
@@ -142,25 +146,28 @@
   </div>
 
   <script>
-    // ربط التطبيق بجدول Google Sheets الخاص بك عبر SheetDB
-    const SHEET_API_URL = "https://sheetdb.io/api/v1/z3ao572p692x0";
+    // الرابط الدائم والمجاني الخاص بك
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBy6VMkNOokA0wRIsOUVcLgOyAgZtAm1q0zd08gx5RLQjL8Y6bNlUnGNpbSutXFDXDog/exec";
 
     let allMeds = [];
 
     // جلب البيانات من Google Sheet
     async function fetchSheetData() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('fa-spin'); // تشغيل حركة الدوران
+      
       try {
-        const res = await fetch(SHEET_API_URL);
-        if (res.ok) {
-          allMeds = await res.json();
-        }
+        const res = await fetch(SCRIPT_URL);
+        allMeds = await res.json();
       } catch (e) {
-        console.error("خطأ في قراءة الجدول:", e);
+        console.error("خطأ:", e);
       }
+      
+      icon.classList.remove('fa-spin'); // إيقاف الحركة
       refreshUI();
     }
 
-    async function refreshUI() {
+    function refreshUI() {
       updateStats();
       renderMeds();
       renderManageList();
@@ -172,7 +179,9 @@
       let expiringCount = 0;
 
       allMeds.forEach(m => {
-        if (m.exp && m.exp < today) expiredCount++;
+        // تحويل التاريخ من صيغة جوجل إلى صيغة قابلة للقراءة
+        let expDate = m.exp ? new Date(m.exp).toISOString().split('T')[0] : '';
+        if (expDate && expDate < today) expiredCount++;
       });
 
       document.getElementById('stat-total').innerText = allMeds.length;
@@ -186,27 +195,29 @@
       const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
 
       if (allMeds.length === 0) {
-        container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">لا توجد أدوية في الجدول. انقر على "+ إضافة دواء جديد".</div>`;
+        container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">الجدول فارغ حالياً. ابدأ بإضافة الأدوية!</div>`;
         return;
       }
 
       let matches = allMeds.filter(m => !searchTerm || (m.name && m.name.toLowerCase().startsWith(searchTerm)));
 
       if (matches.length === 0) {
-        container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">لم يتم العثور على دواء يبدأ بهذا الحرف.</div>`;
+        container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">لم يتم العثور على دواء.</div>`;
         return;
       }
 
-      container.innerHTML = matches.map(m => `
+      container.innerHTML = matches.map(m => {
+        let expDate = m.exp ? new Date(m.exp).toISOString().split('T')[0] : '-';
+        return `
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2 text-xs">
           <div class="flex justify-between items-center border-b pb-2">
             <button onclick="deleteMed('${m.id}')" class="text-rose-500 hover:text-rose-700" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
             <h3 class="font-extrabold text-sm text-slate-800">${escapeHtml(m.name)} (x${m.quantity || 1})</h3>
           </div>
-          <p class="text-slate-500">الصلاحية: ${m.exp || '-'} | المكان: ${escapeHtml(m.loc || 'غير محدد')}</p>
+          <p class="text-slate-500">الصلاحية: <span class="font-bold">${expDate}</span> | المكان: ${escapeHtml(m.loc || 'غير محدد')}</p>
           ${m.notes ? `<p class="text-emerald-700">ملاحظة: ${escapeHtml(m.notes)}</p>` : ''}
         </div>
-      `).join('');
+      `}).join('');
     }
 
     function renderManageList() {
@@ -217,8 +228,8 @@
       }
       container.innerHTML = allMeds.map(m => `
         <div class="bg-slate-50 border rounded-xl p-2.5 flex justify-between items-center text-xs">
-          <button onclick="deleteMed('${m.id}')" class="text-rose-500 font-bold">إزالة</button>
-          <span>${escapeHtml(m.name)}</span>
+          <button onclick="deleteMed('${m.id}')" class="text-rose-500 font-bold bg-rose-100 px-3 py-1 rounded-lg">إزالة</button>
+          <span class="font-bold">${escapeHtml(m.name)}</span>
         </div>
       `).join('');
     }
@@ -226,10 +237,8 @@
     document.getElementById('search-input').addEventListener('input', renderMeds);
 
     function openModal() {
-      document.getElementById('med-id').value = '';
       document.getElementById('add-form').reset();
       document.getElementById('qty').value = 1;
-      document.getElementById('modal-title').innerText = 'إضافة دواء جديد';
       document.getElementById('add-modal').classList.remove('hidden');
     }
 
@@ -237,9 +246,12 @@
     function openManageModal() { document.getElementById('manage-modal').classList.remove('hidden'); }
     function closeManageModal() { document.getElementById('manage-modal').classList.add('hidden'); }
 
-    // إضافة أو حفظ دواء جديد وإرساله لجدول جوجل مباشرة
+    // حفظ دواء جديد
     document.getElementById('add-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const btn = document.getElementById('save-btn');
+      btn.innerText = "جاري الحفظ...";
+      btn.disabled = true;
       
       const medData = {
         id: 'med_' + Date.now(),
@@ -251,30 +263,37 @@
       };
 
       try {
-        await fetch(SHEET_API_URL, {
+        await fetch(SCRIPT_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: medData })
+          body: JSON.stringify({ action: "add", data: medData })
         });
         
         document.getElementById('add-form').reset();
         closeModal();
-        fetchSheetData(); 
+        await fetchSheetData(); // تحديث القائمة فوراً
       } catch (err) {
-        alert("حدث خطأ أثناء الإرسال لجدول جوجل.");
+        console.error(err);
       }
+      
+      btn.innerText = "حفظ في جدول جوجل";
+      btn.disabled = false;
     });
 
-    // حذف دواء من جدول جوجل
+    // حذف دواء
     async function deleteMed(id) {
-      if (confirm("هل تريد إزالة هذا الدواء؟")) {
+      if (confirm("هل أنت متأكد من إزالة هذا الدواء نهائياً؟")) {
         try {
-          await fetch(`${SHEET_API_URL}/id/${id}`, {
-            method: "DELETE"
+          // نعرض تحميل وهمي سريع لحين الرد من السيرفر
+          document.getElementById('meds-container').innerHTML = `<div class="text-center text-slate-400 text-xs p-6"><i class="fa-solid fa-spinner fa-spin text-2xl text-rose-500 mb-2 block"></i>جاري الحذف...</div>`;
+          
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "delete", data: { id: id } })
           });
-          fetchSheetData();
+          
+          await fetchSheetData();
         } catch (err) {
-          alert("حدث خطأ أثناء الحذف.");
+          console.error(err);
         }
       }
     }
@@ -284,12 +303,11 @@
     }
 
     function escapeHtml(str) {
-      return (str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+      return (str || '').toString().replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
 
-    // جلب البيانات أول مرة وتحديثها تلقائياً كل 3 ثوانٍ
+    // جلب البيانات أول مرة فقط عند فتح التطبيق
     fetchSheetData();
-    setInterval(fetchSheetData, 3000);
   </script>
 </body>
 </html>
