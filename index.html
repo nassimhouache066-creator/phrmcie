@@ -8,10 +8,6 @@
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Firebase Scripts (المحرك السحابي الرسمي للاتصال الفوري) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
@@ -42,7 +38,7 @@
             <span class="bg-[#f0b429] text-emerald-950 font-bold text-[10px] px-2 py-0.5 rounded-full">عائلي</span>
             <span class="text-lg font-extrabold tracking-wide">Pharmacie Familiale</span>
           </div>
-          <p class="text-emerald-100 text-xs">متزامن سحابياً لحظياً عبر الإنترنت</p>
+          <p class="text-emerald-100 text-xs">متزامن سحابياً عبر Google Sheets</p>
         </div>
       </div>
     </div>
@@ -78,7 +74,7 @@
     <div id="meds-container" class="space-y-3">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">
         <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-600 mb-2 block"></i>
-        جاري الاتصال بقاعدة البيانات السحابية الحية...
+        جاري جلب الأدوية من جدول جوجل...
       </div>
     </div>
 
@@ -139,43 +135,36 @@
           <input type="text" id="notes" placeholder="مثال: بعد الأكل" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
         </div>
         <button type="submit" class="w-full bg-[#054d3b] hover:bg-[#07634d] text-white font-bold py-3 rounded-xl text-xs transition mt-2">
-          حفظ وتزامن سحابي فوري
+          حفظ في جدول جوجل
         </button>
       </form>
     </div>
   </div>
 
   <script>
-    // إعدادات الاتصال السحابي المشترك والمباشر
-    const firebaseConfig = {
-      apiKey: "AIzaSyD-family-pharmacy-app-2026-secure",
-      authDomain: "family-pharmacy-online.firebaseapp.com",
-      projectId: "family-pharmacy-online",
-      storageBucket: "family-pharmacy-online.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.firestore();
+    // ربط التطبيق بجدول Google Sheets الخاص بك عبر SheetDB
+    const SHEET_API_URL = "https://sheetdb.io/api/v1/z3ao572p692x0";
 
     let allMeds = [];
 
-    // مزامنة سحابية فورية تلقائية عبر الإنترنت بين جميع المستخدمين بدون أي زر تحديث
-    db.collection('family_medicines_db').orderBy('createdAt', 'desc')
-      .onSnapshot((snapshot) => {
-        allMeds = [];
-        snapshot.forEach((doc) => {
-          allMeds.push({ id: doc.id, ...doc.data() });
-        });
-        updateStats();
-        renderMeds();
-        renderManageList();
-      }, (error) => {
-        console.error("خطأ في المزامنة:", error);
-      });
+    // جلب البيانات من Google Sheet
+    async function fetchSheetData() {
+      try {
+        const res = await fetch(SHEET_API_URL);
+        if (res.ok) {
+          allMeds = await res.json();
+        }
+      } catch (e) {
+        console.error("خطأ في قراءة الجدول:", e);
+      }
+      refreshUI();
+    }
+
+    async function refreshUI() {
+      updateStats();
+      renderMeds();
+      renderManageList();
+    }
 
     function updateStats() {
       const today = new Date().toISOString().split('T')[0];
@@ -183,7 +172,7 @@
       let expiringCount = 0;
 
       allMeds.forEach(m => {
-        if (m.exp < today) expiredCount++;
+        if (m.exp && m.exp < today) expiredCount++;
       });
 
       document.getElementById('stat-total').innerText = allMeds.length;
@@ -197,11 +186,11 @@
       const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
 
       if (allMeds.length === 0) {
-        container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">لا توجد أدوية مضافة سحابياً حتى الآن. انقر على "+ إضافة دواء جديد".</div>`;
+        container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">لا توجد أدوية في الجدول. انقر على "+ إضافة دواء جديد".</div>`;
         return;
       }
 
-      let matches = allMeds.filter(m => !searchTerm || m.name.toLowerCase().startsWith(searchTerm));
+      let matches = allMeds.filter(m => !searchTerm || (m.name && m.name.toLowerCase().startsWith(searchTerm)));
 
       if (matches.length === 0) {
         container.innerHTML = `<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400 text-xs">لم يتم العثور على دواء يبدأ بهذا الحرف.</div>`;
@@ -211,11 +200,8 @@
       container.innerHTML = matches.map(m => `
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-2 text-xs">
           <div class="flex justify-between items-center border-b pb-2">
-            <div class="flex gap-2">
-              <button onclick="editMed('${m.id}')" class="text-indigo-500 hover:text-indigo-700" title="تعديل"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="deleteMed('${m.id}')" class="text-rose-500 hover:text-rose-700" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
-            </div>
-            <h3 class="font-extrabold text-sm text-slate-800">${escapeHtml(m.name)} (x${m.quantity})</h3>
+            <button onclick="deleteMed('${m.id}')" class="text-rose-500 hover:text-rose-700" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
+            <h3 class="font-extrabold text-sm text-slate-800">${escapeHtml(m.name)} (x${m.quantity || 1})</h3>
           </div>
           <p class="text-slate-500">الصلاحية: ${m.exp || '-'} | المكان: ${escapeHtml(m.loc || 'غير محدد')}</p>
           ${m.notes ? `<p class="text-emerald-700">ملاحظة: ${escapeHtml(m.notes)}</p>` : ''}
@@ -226,7 +212,7 @@
     function renderManageList() {
       const container = document.getElementById('manage-list-container');
       if (allMeds.length === 0) {
-        container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs">لا توجد أدوية لإدارتها.</p>';
+        container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs">لا توجد أدوية.</p>';
         return;
       }
       container.innerHTML = allMeds.map(m => `
@@ -251,52 +237,42 @@
     function openManageModal() { document.getElementById('manage-modal').classList.remove('hidden'); }
     function closeManageModal() { document.getElementById('manage-modal').classList.add('hidden'); }
 
-    function editMed(id) {
-      const med = allMeds.find(m => m.id === id);
-      if (!med) return;
-
-      document.getElementById('med-id').value = med.id;
-      document.getElementById('name').value = med.name || '';
-      document.getElementById('qty').value = med.quantity || 1;
-      document.getElementById('exp').value = med.exp || '';
-      document.getElementById('loc').value = med.loc || '';
-      document.getElementById('notes').value = med.notes || '';
-      
-      document.getElementById('modal-title').innerText = 'تعديل بيانات الدواء';
-      document.getElementById('add-modal').classList.remove('hidden');
-    }
-
-    // إرسال البيانات وحفظها سحابياً لتحديث جميع الهواتف فوراً
+    // إضافة أو حفظ دواء جديد وإرساله لجدول جوجل مباشرة
     document.getElementById('add-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const id = document.getElementById('med-id').value;
       
       const medData = {
+        id: 'med_' + Date.now(),
         name: document.getElementById('name').value.trim(),
-        quantity: parseInt(document.getElementById('qty').value) || 1,
+        quantity: document.getElementById('qty').value,
         exp: document.getElementById('exp').value,
         loc: document.getElementById('loc').value.trim(),
-        notes: document.getElementById('notes').value.trim(),
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        notes: document.getElementById('notes').value.trim()
       };
 
       try {
-        if (id) {
-          await db.collection('family_medicines_db').doc(id).update(medData);
-        } else {
-          await db.collection('family_medicines_db').add(medData);
-        }
+        await fetch(SHEET_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: medData })
+        });
+        
         document.getElementById('add-form').reset();
         closeModal();
+        fetchSheetData(); 
       } catch (err) {
-        alert("حدث خطأ أثناء المزامنة السحابية.");
+        alert("حدث خطأ أثناء الإرسال لجدول جوجل.");
       }
     });
 
+    // حذف دواء من جدول جوجل
     async function deleteMed(id) {
-      if (confirm("هل تريد إزالة هذا الدواء نهائياً من السحابة؟")) {
+      if (confirm("هل تريد إزالة هذا الدواء؟")) {
         try {
-          await db.collection('family_medicines_db').doc(id).delete();
+          await fetch(`${SHEET_API_URL}/id/${id}`, {
+            method: "DELETE"
+          });
+          fetchSheetData();
         } catch (err) {
           alert("حدث خطأ أثناء الحذف.");
         }
@@ -304,12 +280,16 @@
     }
 
     function shareApp() {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('صيدلية العائلة - تابع الأدوية المنزلية عبر الرابط مباشرة:\n' + window.location.href)}`, '_blank');
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('صيدلية العائلة - تابع الأدوية المنزلية عبر الرابط:\n' + window.location.href)}`, '_blank');
     }
 
     function escapeHtml(str) {
       return (str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
     }
+
+    // جلب البيانات أول مرة وتحديثها تلقائياً كل 3 ثوانٍ
+    fetchSheetData();
+    setInterval(fetchSheetData, 3000);
   </script>
 </body>
 </html>
